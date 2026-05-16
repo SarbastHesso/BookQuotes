@@ -1,0 +1,24 @@
+.vs/
+
+# .NET build output
+**/bin/
+**/obj/
+**/*.user
+**/*.suo
+**/*.lscache
+BookQuotes.Api/appsettings.Development.json
+
+# Angular / Node
+bookquotes-ui/node_modules/
+bookquotes-ui/dist/
+bookquotes-ui/.angular/
+
+# Logs and local env files
+*.log
+.env
+.env.*
+
+# OS / editor files
+.DS_Store
+Thumbs.db
+

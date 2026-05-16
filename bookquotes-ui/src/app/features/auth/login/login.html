@@ -1,0 +1,50 @@
+<div class="row justify-content-center">
+  <div class="col-12 col-md-8 col-lg-5">
+    <section class="surface-card p-4 p-lg-5">
+      <h1 class="section-title h2 mb-3 text-center">Login</h1>
+      <p class="section-subtitle text-center mx-auto mb-4">Use your account to manage books and save your five favorite quotes.</p>
+
+      <div *ngIf="errorMessage" class="alert alert-danger">
+        {{ errorMessage }}
+      </div>
+
+      <div *ngIf="successMessage" class="alert alert-success">
+        {{ successMessage }}
+      </div>
+
+      <form (ngSubmit)="login()" novalidate>
+        <div class="mb-3">
+          <label class="form-label">Username</label>
+          <input
+            type="text"
+            class="form-control"
+            [(ngModel)]="userName"
+            name="userName"
+            (ngModelChange)="onInputChange()"
+            minlength="3"
+            maxlength="50"
+            required
+          />
+        </div>
+
+        <div class="mb-4">
+          <label class="form-label">Password</label>
+          <input
+            type="password"
+            class="form-control"
+            [(ngModel)]="password"
+            name="password"
+            (ngModelChange)="onInputChange()"
+            minlength="6"
+            required
+          />
+        </div>
+
+        <button class="btn btn-primary w-100" type="submit">
+          <i class="fa-solid fa-right-to-bracket me-2"></i>
+          Login
+        </button>
+      </form>
+    </section>
+  </div>
+</div>

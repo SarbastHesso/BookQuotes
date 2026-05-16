@@ -1,0 +1,44 @@
+<section class="surface-card p-4 p-lg-5 mx-auto" style="max-width: 760px;">
+  <p class="text-uppercase small fw-semibold mb-2 muted-text">Books</p>
+  <h1 class="section-title h2 mb-3">{{ id ? 'Edit book' : 'Add a new book' }}</h1>
+  <p class="section-subtitle mb-4">Use this form to keep the public book list accurate and up to date.</p>
+
+  @if (errorMessage) {
+    <div class="alert alert-danger">{{ errorMessage }}</div>
+  }
+
+  <form [formGroup]="form" (ngSubmit)="save()" novalidate>
+    <div class="mb-3">
+      <label class="form-label">Title</label>
+      <input class="form-control" formControlName="title" placeholder="Example: The Alchemist">
+      @if (form.controls['title'].invalid && form.controls['title'].touched) {
+        <div class="text-danger small mt-2">Title is required and must be at most 200 characters.</div>
+      }
+    </div>
+
+    <div class="mb-3">
+      <label class="form-label">Author</label>
+      <input class="form-control" formControlName="author" placeholder="Example: Paulo Coelho">
+      @if (form.controls['author'].invalid && form.controls['author'].touched) {
+        <div class="text-danger small mt-2">Author is required and must be at most 200 characters.</div>
+      }
+    </div>
+
+    <div class="mb-4">
+      <label class="form-label">Published year</label>
+      <input type="number" class="form-control" formControlName="publishedYear" min="1450" max="2100">
+      @if (form.controls['publishedYear'].invalid && form.controls['publishedYear'].touched) {
+        <div class="text-danger small mt-2">Published year must be between 1450 and 2100.</div>
+      }
+    </div>
+
+    <div class="d-flex gap-2 flex-wrap">
+      <button type="submit" class="btn btn-primary" [disabled]="isSaving">
+        <i class="fa-solid fa-floppy-disk me-2"></i>
+        {{ isSaving ? 'Saving...' : 'Save book' }}
+      </button>
+      <a class="btn btn-outline-secondary" routerLink="/books">Cancel</a>
+    </div>
+  </form>
+</section>
+

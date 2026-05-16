@@ -1,0 +1,60 @@
+<section class="surface-card p-4 p-lg-5">
+	<div class="d-flex flex-column flex-lg-row justify-content-between gap-3 align-items-lg-center mb-4">
+		<div>
+			<p class="text-uppercase small fw-semibold mb-2 muted-text">Quotes</p>
+			<h1 class="section-title mb-2">Community quotes</h1>
+			@if (currentUser()) {
+				<p class="section-subtitle mb-0">Browse quotes from all users and manage your own saved favorites from the My Quotes page.</p>
+			} @else {
+				<p class="section-subtitle mb-0">Browse quotes from all users. Log in if you want to save and manage your own favorites.</p>
+			}
+		</div>
+
+		@if (currentUser()) {
+			<a class="btn btn-primary" routerLink="/quotes/my">
+				<i class="fa-solid fa-heart me-2"></i>
+				Go to My Quotes
+			</a>
+		} @else {
+			<a class="btn btn-outline-primary" routerLink="/login">
+				<i class="fa-solid fa-right-to-bracket me-2"></i>
+				Login to save quotes
+			</a>
+		}
+	</div>
+
+	@if (errorMessage()) {
+		<div class="alert alert-danger">{{ errorMessage() }}</div>
+	}
+
+	@if (loading()) {
+		<div class="py-5 text-center muted-text">
+			<div class="spinner-border text-primary mb-3" role="status"></div>
+			<p class="mb-0">Loading quotes...</p>
+		</div>
+	} @else if (!quotes().length) {
+		<div class="alert alert-light border text-center py-4 mb-0">
+			<h2 class="h5 mb-2">No quotes published yet</h2>
+			@if (currentUser()) {
+				<p class="mb-0 muted-text">Be the first user to add a favorite quote.</p>
+			} @else {
+				<p class="mb-0 muted-text">Log in to become the first user to add a favorite quote.</p>
+			}
+		</div>
+	} @else {
+		<div class="row g-3">
+			@for (quote of quotes(); track quote.id) {
+				<div class="col-12 col-md-6 col-xl-4">
+					<article class="card h-100 border-0 surface-card p-4">
+						<div class="d-flex justify-content-between align-items-start gap-3 mb-3">
+							<span class="badge text-bg-light border">{{ quote.userName || 'Anonymous' }}</span>
+							<i class="fa-solid fa-quote-right muted-text"></i>
+						</div>
+						<p class="fs-5 mb-3">“{{ quote.text }}”</p>
+						<p class="small muted-text mb-0">Added {{ quote.createdAt | date: 'mediumDate' }}</p>
+					</article>
+				</div>
+			}
+		</div>
+	}
+</section>

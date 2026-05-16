@@ -1,0 +1,88 @@
+<section class="surface-card p-4 p-lg-5">
+	<div class="d-flex flex-column flex-lg-row justify-content-between gap-3 align-items-lg-center mb-4">
+		<div>
+			<p class="text-uppercase small fw-semibold mb-2 muted-text">My Quotes</p>
+			<h1 class="section-title mb-2">Your favorite quotes</h1>
+			<p class="section-subtitle mb-0">Save up to {{ maxQuotes }} quotes, edit your own entries, and remove the ones you no longer want to keep.</p>
+		</div>
+
+		<a class="btn btn-primary" routerLink="/quotes/add" [class.disabled]="quotes().length >= maxQuotes" [attr.aria-disabled]="quotes().length >= maxQuotes">
+			<i class="fa-solid fa-plus me-2"></i>
+			Add quote
+		</a>
+	</div>
+
+	<div class="alert" [class.alert-warning]="quotes().length >= maxQuotes" [class.alert-light]="quotes().length < maxQuotes">
+		<strong>{{ quotes().length }}/{{ maxQuotes }}</strong>
+		saved quotes.
+		@if (quotes().length >= maxQuotes) {
+			Delete one before adding another.
+		}
+	</div>
+
+	@if (errorMessage()) {
+		<div class="alert alert-danger">{{ errorMessage() }}</div>
+	}
+
+	@if (loading()) {
+		<div class="py-5 text-center muted-text">
+			<div class="spinner-border text-primary mb-3" role="status"></div>
+			<p class="mb-0">Loading your quotes...</p>
+		</div>
+	} @else if (!quotes().length) {
+		<div class="alert alert-light border text-center py-4 mb-0">
+			<h2 class="h5 mb-2">No saved quotes yet</h2>
+			<p class="mb-0 muted-text">Add your first favorite quote to start building your personal list.</p>
+		</div>
+	} @else {
+		<div class="row g-3">
+			@for (quote of quotes(); track quote.id) {
+				<div class="col-12 col-lg-6">
+					<article class="surface-card p-4 h-100">
+						<div class="d-flex justify-content-between align-items-start gap-3 mb-3">
+							<span class="badge text-bg-light border">{{ quote.createdAt | date: 'mediumDate' }}</span>
+							<i class="fa-solid fa-heart text-danger"></i>
+						</div>
+						<p class="fs-5 mb-4">“{{ quote.text }}”</p>
+						<div class="d-flex gap-2 flex-wrap">
+							<button class="btn btn-outline-secondary btn-sm" (click)="editQuote(quote.id)">
+								<i class="fa-solid fa-pen-to-square me-1"></i>
+								Edit
+							</button>
+							<button class="btn btn-outline-danger btn-sm" (click)="openDeleteDialog(quote)">
+								<i class="fa-solid fa-trash me-1"></i>
+								Delete
+							</button>
+						</div>
+					</article>
+				</div>
+			}
+		</div>
+	}
+</section>
+
+@if (quotePendingDelete(); as quote) {
+	<div class="confirm-overlay" (click)="closeDeleteDialog()">
+		<section
+			class="confirm-dialog surface-card p-4"
+			role="dialog"
+			aria-modal="true"
+			aria-labelledby="quote-delete-title"
+			(click)="$event.stopPropagation()"
+		>
+			<p class="text-uppercase small fw-semibold mb-2 text-danger">Delete Quote</p>
+			<h2 class="h4 mb-3" id="quote-delete-title">Delete this quote?</h2>
+			<p class="mb-2">This action cannot be undone.</p>
+			<p class="mb-4 muted-text">“{{ quote.text }}” will be removed from your saved quotes.</p>
+			<div class="d-flex justify-content-end gap-2 flex-wrap">
+				<button class="btn btn-outline-secondary" type="button" (click)="closeDeleteDialog()" [disabled]="deleting()">
+					Cancel
+				</button>
+				<button class="btn btn-danger" type="button" (click)="confirmDeleteQuote()" [disabled]="deleting()">
+					<i class="fa-solid fa-trash me-2"></i>
+					{{ deleting() ? 'Deleting...' : 'Delete quote' }}
+				</button>
+			</div>
+		</section>
+	</div>
+}

@@ -1,0 +1,113 @@
+# BookQuotes
+
+BookQuotes is a responsive CRUD web application built with Angular 21 for the frontend and .NET 9 for the backend API. It lets users browse books and public quotes, register and log in with JWT authentication, manage books, and maintain a personal list of favorite quotes.
+
+## Tech Stack
+
+- Frontend: Angular 21, Bootstrap 5, Font Awesome
+- Backend: ASP.NET Core 9 Web API, Entity Framework Core, SQL Server LocalDB
+- Authentication: JWT bearer tokens
+- Styling: Bootstrap with custom light/dark theme support
+
+## Main Features
+
+- Books landing page at `/books`
+- Book CRUD for authenticated users
+- Public quotes view
+- Protected `My Quotes` view for each user
+- Quote add, edit, and delete flows
+- Maximum of 5 saved quotes per user
+- Duplicate prevention for books and quotes
+- JWT-based login and registration
+- Responsive navigation with mobile menu
+- Light and dark theme toggle
+
+## Project Structure
+
+- `bookquotes-ui/`: Angular frontend
+- `BookQuotes.Api/`: ASP.NET Core API
+- `BookQuotes.sln`: solution file for the backend project
+
+## Local Development
+
+### Prerequisites
+
+- Node.js 20+
+- npm 11+
+- .NET SDK 9
+- SQL Server LocalDB on Windows
+
+### 1. Start the API
+
+From `BookQuotes.Api/`:
+
+```bash
+dotnet restore
+dotnet build
+dotnet run
+```
+
+Default local URLs from launch settings:
+
+- `https://localhost:7280`
+- `http://localhost:5268`
+
+The Angular app is configured to proxy `/api` to `https://localhost:7280` in development.
+
+### 2. Start the frontend
+
+From `bookquotes-ui/`:
+
+```bash
+npm install
+npm start
+```
+
+Frontend development URL:
+
+- `http://localhost:4200`
+
+## Validation Commands
+
+These are the main repo checks currently used:
+
+### Backend
+
+```bash
+dotnet build BookQuotes.sln
+```
+
+### Frontend
+
+```bash
+cd bookquotes-ui
+npm run build
+```
+
+## Authentication Flow
+
+- Users can register with a username and password.
+- Users can log in and receive a JWT token from the API.
+- The frontend stores the logged-in user in local storage.
+- The auth interceptor sends the bearer token with protected API requests.
+- Protected frontend routes use an Angular auth guard.
+
+## Notes
+
+- The app currently targets Angular 21 instead of Angular 20.
+- The books page is used as the landing page and start page.
+- The default development connection string uses SQL Server LocalDB.
+- JWT settings are stored in `BookQuotes.Api/appsettings.json` and should be replaced with production-safe values before deployment.
+
+## Next Submission Steps
+
+- Finish a full end-to-end requirement test pass
+- Deploy the frontend to a free hosting service
+- Deploy the API to a free hosting service
+- Update production API URLs and CORS/proxy settings
+- Submit the live link and GitHub repository links
+
+## More Documentation
+
+- Frontend details: `bookquotes-ui/README.md`
+- API details: `BookQuotes.Api/README.md`

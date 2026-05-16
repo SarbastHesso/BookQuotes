@@ -1,0 +1,81 @@
+<nav class="navbar navbar-expand-lg navbar-dark app-navbar sticky-top border-bottom">
+  <div class="container-fluid">
+
+    <a class="navbar-brand brand-lockup" routerLink="/books" (click)="collapseMenu()" aria-label="BookQuotes home">
+      <span class="brand-mark" aria-hidden="true">
+        <span class="brand-mark-book"></span>
+        <i class="fa-solid fa-quote-left brand-mark-quote"></i>
+      </span>
+      <span class="brand-copy">
+        <span class="brand-title">BookQuotes</span>
+        <span class="brand-tag">Books and favorite lines</span>
+      </span>
+    </a>
+
+        <button class="navbar-toggler" type="button"
+          data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent"
+          aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+
+      <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+
+        <!-- Always visible -->
+        <li class="nav-item">
+          <a class="nav-link" routerLink="/books" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }" (click)="collapseMenu()">
+            <i class="fa-solid fa-book me-1"></i>
+            Books
+          </a>
+        </li>
+
+        <!-- Always visible -->
+        <li class="nav-item">
+          <a class="nav-link" routerLink="/quotes" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }" (click)="collapseMenu()">
+            <i class="fa-solid fa-quote-left me-1"></i>
+            Quotes
+          </a>
+        </li>
+
+        <!-- Only when logged in -->
+        <li class="nav-item" *ngIf="user()">
+          <a class="nav-link" routerLink="/quotes/my" routerLinkActive="active" (click)="collapseMenu()">
+            <i class="fa-solid fa-heart me-1"></i>
+            My Quotes
+          </a>
+        </li>
+
+      </ul>
+
+      <ul class="navbar-nav ms-auto">
+        <li class="nav-item d-flex align-items-center me-lg-3 mb-2 mb-lg-0">
+          <button class="btn btn-sm theme-toggle" type="button" (click)="toggleTheme()">
+            <i class="fa-solid" [class.fa-moon]="theme() === 'light'" [class.fa-sun]="theme() === 'dark'"></i>
+            <span class="ms-2">{{ theme() === 'light' ? 'Dark' : 'Light' }}</span>
+          </button>
+        </li>
+
+        <!-- Logged OUT -->
+        <li class="nav-item" *ngIf="!user()">
+          <a class="nav-link" routerLink="/login" routerLinkActive="active" (click)="collapseMenu()">Login</a>
+        </li>
+
+        <li class="nav-item" *ngIf="!user()">
+          <a class="nav-link" routerLink="/register" routerLinkActive="active" (click)="collapseMenu()">Register</a>
+        </li>
+
+        <!-- Logged IN -->
+        <li class="nav-item d-flex align-items-center navbar-user me-3" *ngIf="user() as currentUser">
+          Welcome, {{ currentUser.userName }}
+        </li>
+
+        <li class="nav-item" *ngIf="user()">
+          <a class="nav-link" (click)="logout()">Logout</a>
+        </li>
+
+      </ul>
+
+    </div>
+  </div>
+</nav>
