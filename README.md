@@ -125,7 +125,7 @@ npm run build
 - The app currently targets Angular 21 instead of Angular 20.
 - The books page is used as the landing page and start page.
 - The default development connection string uses SQL Server LocalDB.
-- JWT settings are stored in `BookQuotes.Api/appsettings.json` and should be replaced with production-safe values before deployment.
+- Local testing uses `BookQuotes.Api/appsettings.Development.json`, while deployment should use production-safe settings in `BookQuotes.Api/appsettings.json` or environment variables.
 
 ## Next Submission Steps
 

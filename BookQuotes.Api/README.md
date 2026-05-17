@@ -42,7 +42,7 @@ Default development URLs:
 
 ## Database
 
-The default connection string in `appsettings.json` uses:
+For local development, the connection string in `appsettings.Development.json` uses:
 
 ```text
 Server=(localdb)\MSSQLLocalDB;Database=BookQuotesDb;Trusted_Connection=True;MultipleActiveResultSets=true
@@ -58,7 +58,9 @@ dotnet ef database update
 
 ## JWT Configuration
 
-JWT settings are stored in `appsettings.json`:
+For local development, the JWT key is stored in `appsettings.Development.json`.
+
+Production JWT settings are configured in `appsettings.json`:
 
 - `Jwt:Key`
 - `Jwt:Issuer`
