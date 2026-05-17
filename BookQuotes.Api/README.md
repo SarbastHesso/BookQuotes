@@ -20,11 +20,18 @@ This is the ASP.NET Core 9 Web API for the BookQuotes application.
 
 ## Local Run
 
+Before running the API locally:
+
+1. Copy `appsettings.Development.example.json` to `appsettings.Development.json`
+2. Keep the LocalDB connection string or replace it with your own local SQL Server connection string
+3. Replace `Jwt:Key` with a long random development-only secret
+
 From this folder:
 
 ```bash
 dotnet restore
 dotnet build
+dotnet ef database update
 dotnet run
 ```
 

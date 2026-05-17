@@ -37,6 +37,34 @@ BookQuotes is a responsive CRUD web application built with Angular 21 for the fr
 - .NET SDK 9
 - SQL Server LocalDB on Windows
 
+### Local Test Setup
+
+Before starting the app, create a local API development config:
+
+1. Copy `BookQuotes.Api/appsettings.Development.example.json` to `BookQuotes.Api/appsettings.Development.json`
+2. Keep the LocalDB connection string or replace it with your own local SQL Server connection string
+3. Replace `Jwt:Key` with a long random development-only secret
+
+Then prepare and run the project:
+
+1. From `BookQuotes.Api/`, run:
+
+```bash
+dotnet restore
+dotnet build
+dotnet ef database update
+dotnet run
+```
+
+2. From `bookquotes-ui/`, run:
+
+```bash
+npm install
+npm start
+```
+
+3. Open `http://localhost:4200`
+
 ### 1. Start the API
 
 From `BookQuotes.Api/`:
