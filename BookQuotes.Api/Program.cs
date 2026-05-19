@@ -107,9 +107,17 @@ namespace BookQuotes.Api
 
             builder.Services.AddCors(options =>
             {
+                // Allow configuring allowed origins via configuration or env var `CORS_ALLOWED_ORIGINS` (comma-separated)
+                var origins = builder.Configuration["Cors:AllowedOrigins"] ?? Environment.GetEnvironmentVariable("CORS_ALLOWED_ORIGINS");
+                string[] allowed = new string[] { "http://localhost:4200" };
+                if (!string.IsNullOrWhiteSpace(origins))
+                {
+                    allowed = origins.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+                }
+
                 options.AddPolicy("AllowAngular", policy =>
                 {
-                    policy.WithOrigins("http://localhost:4200")
+                    policy.WithOrigins(allowed)
                           .AllowAnyHeader()
                           .AllowAnyMethod();
                 });
@@ -149,10 +157,16 @@ namespace BookQuotes.Api
                     }
                     else
                     {
-                        // Avoid applying automatic migrations in Development to protect local databases.
-                        if (!app.Environment.IsDevelopment())
+                        // Require explicit opt-in for applying migrations in non-development environments.
+                        // Set environment variable `AUTO_APPLY_MIGRATIONS=true` in CI/CD or host only when you want automatic migration.
+                        var autoApply = Environment.GetEnvironmentVariable("AUTO_APPLY_MIGRATIONS")?.ToLowerInvariant() == "true";
+                        if (!app.Environment.IsDevelopment() && autoApply)
                         {
                             db.Database.Migrate();
+                        }
+                        else if (!app.Environment.IsDevelopment())
+                        {
+                            logger.LogWarning("Automatic migrations are disabled in non-development environment. Set AUTO_APPLY_MIGRATIONS=true to enable.");
                         }
                         else
                         {
