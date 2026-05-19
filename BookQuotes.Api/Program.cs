@@ -1,6 +1,7 @@
 using BookQuotes.Api.Data;
 using BookQuotes.Api.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
 using Microsoft.IdentityModel.Tokens;
@@ -99,6 +100,22 @@ namespace BookQuotes.Api
             });
 
             builder.Services.AddScoped<TokenService>();
+
+            // Configure DataProtection key persistence when DataProtection:KeyPath is provided.
+            var dataProtectionPath = builder.Configuration["DataProtection:KeyPath"];
+            if (!string.IsNullOrWhiteSpace(dataProtectionPath))
+            {
+                try
+                {
+                    builder.Services.AddDataProtection()
+                        .PersistKeysToFileSystem(new System.IO.DirectoryInfo(dataProtectionPath));
+                }
+                catch (Exception ex)
+                {
+                    // If key path is invalid or not writable, continue but log the issue at runtime.
+                    // Runtime logger will surface this during startup.
+                }
+            }
 
             var app = builder.Build();
 

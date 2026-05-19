@@ -20,9 +20,12 @@ services:
       - ASPNETCORE_ENVIRONMENT=Development
       - Database__Provider=Postgres
       - ConnectionStrings__PostgresConnection=Host=db;Database=bookquotes;Username=postgres;Password=postgres
+      - DataProtection__KeyPath=/keys
     ports:
       - "5268:80"
     restart: on-failure
+    volumes:
+      - data_protection:/keys
 
   frontend:
     build:
@@ -34,3 +37,4 @@ services:
 
 volumes:
   db_data:
+  data_protection:
