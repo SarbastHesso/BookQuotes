@@ -108,13 +108,23 @@ namespace BookQuotes.Api
                 using (var scope = app.Services.CreateScope())
                 {
                     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+                    var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
+
                     if (db.Database.IsSqlite())
                     {
                         db.Database.EnsureCreated();
                     }
                     else
                     {
-                        db.Database.Migrate();
+                        // Avoid applying automatic migrations in Development to protect local databases.
+                        if (!app.Environment.IsDevelopment())
+                        {
+                            db.Database.Migrate();
+                        }
+                        else
+                        {
+                            logger.LogInformation("Skipping automatic EF Core migrations in Development environment.");
+                        }
                     }
                 }
             }
