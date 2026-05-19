@@ -129,6 +129,13 @@ The `docker-compose.yml` uses Postgres and the API is configured to run migratio
 
 A GitHub Actions workflow is included in `.github/workflows/ci.yml`. It builds the backend, applies EF migrations against a Postgres service, and builds the frontend. The workflow runs on pushes and pull requests to `main`.
 
+### Deployment and secrets
+
+- For production, do NOT store secrets in files. Use a secret store such as Azure Key Vault or GitHub Actions Secrets.
+- The API supports reading secrets from Azure Key Vault when the `AZURE_KEY_VAULT_URI` environment variable is set (it uses `DefaultAzureCredential`).
+- In GitHub Actions set `JWT_KEY` and `POSTGRES_CONNECTION` as repository secrets to inject them into the CI job (the CI workflow will add them to the environment when present).
+- Add `appsettings.Production.example.json` as a template and populate real values via Key Vault or environment variables in your deployment pipeline.
+
 ### Frontend
 
 ```bash
