@@ -7,6 +7,8 @@ using Npgsql;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using System.Text.Json;
+using Azure.Identity;
+using System;
 
 namespace BookQuotes.Api
 {
@@ -15,6 +17,20 @@ namespace BookQuotes.Api
         public static void Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
+
+            // If AZURE_KEY_VAULT_URI is set as an environment variable, load secrets from Key Vault
+            var keyVaultUri = Environment.GetEnvironmentVariable("AZURE_KEY_VAULT_URI");
+            if (!string.IsNullOrWhiteSpace(keyVaultUri))
+            {
+                try
+                {
+                    builder.Configuration.AddAzureKeyVault(new Uri(keyVaultUri), new DefaultAzureCredential());
+                }
+                catch (Exception)
+                {
+                    // Do not block startup if Key Vault is unavailable during local development.
+                }
+            }
 
             // Add services to the container.
 
