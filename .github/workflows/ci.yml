@@ -25,6 +25,13 @@ jobs:
           dotnet build BookQuotes.sln --configuration Release --no-restore
           dotnet test BookQuotes.sln --configuration Release --no-build --verbosity normal
 
+      # Optional: inject production secrets from GitHub Secrets into the job environment
+      - name: Inject secrets from GitHub
+        if: ${{ secrets.JWT_KEY != '' && secrets.POSTGRES_CONNECTION != '' }}
+        run: |
+          echo "Jwt__Key=${{ secrets.JWT_KEY }}" >> $GITHUB_ENV
+          echo "ConnectionStrings__PostgresConnection=${{ secrets.POSTGRES_CONNECTION }}" >> $GITHUB_ENV
+
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
