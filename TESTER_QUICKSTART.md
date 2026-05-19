@@ -1,0 +1,67 @@
+# Tester Quick Start
+
+This file explains the minimal steps a tester needs to run BookQuotes locally.
+
+## Prerequisites
+- .NET 9 SDK
+- Node.js 20+ and npm
+- SQL Server LocalDB (Windows) or Docker (optional)
+- Git
+
+## 1 — Clone the repo
+
+```bash
+git clone <repo-url>
+cd BookQuotes
+```
+
+## 2 — Configuration (required)
+
+- You will receive a separate file named `appsettings.Development.json` from the project owner. Save that file into the API folder:
+
+  - `BookQuotes.Api/appsettings.Development.json`
+
+- Important: do NOT commit this file. It contains development secrets.
+
+- Confirm the DB provider in the file:
+  - On Windows: `"Database": { "Provider": "SqlServer" }`
+  - On macOS/Linux: `"Database": { "Provider": "Sqlite" }` (optional)
+
+## 3 — Start the backend (API)
+
+Open a terminal in `BookQuotes.Api` and run the app. In Development the API will not apply automatic migrations.
+
+Recommended flow (Windows):
+
+1. `dotnet restore`
+2. `dotnet build`
+3. `dotnet run`
+
+Verify health: open `http://localhost:5268/health` — expected: `{"status":"Healthy"}`
+
+## 4 — Start the frontend (UI)
+
+Open a new terminal in `bookquotes-ui`:
+
+1. `npm ci` (only once or when dependencies change)
+2. `npm start`
+
+Open `http://localhost:4200`
+
+## 5 — Smoke tests for the tester
+
+- Load landing page (books list).
+- Register a user, login, and confirm protected routes (`/quotes/my`, `/books/add`) work.
+- Create a book and a quote; refresh and confirm persistence.
+
+## Safer alternatives
+
+- Instead of sending a config file, the tester can set environment variables according to `BookQuotes.Api/.env.example`.
+- Or run the full stack with Docker: `docker compose up --build` (uses Postgres + API + frontend).
+
+## Security note
+
+- Never commit `appsettings.Development.json` to the repo. If you must share a real key, use a secure channel and provide a short-lived test key.
+
+---
+If you want I can also add a short email template for the tester to include with the file. 
