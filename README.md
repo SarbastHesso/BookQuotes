@@ -105,6 +105,30 @@ These are the main repo checks currently used:
 dotnet build BookQuotes.sln
 ```
 
+## Cross-platform development (SQLite) and Docker
+
+If you want a quick cross-platform local setup without installing SQL Server LocalDB, run the API using SQLite (already configured for Development):
+
+```bash
+ASPNETCORE_ENVIRONMENT=Development dotnet ef database update --project BookQuotes.Api --startup-project BookQuotes.Api
+ASPNETCORE_ENVIRONMENT=Development dotnet run --project BookQuotes.Api
+```
+
+For production-like parity and easy onboarding, you can use Docker Compose which brings up Postgres + API + frontend:
+
+```bash
+docker compose up --build
+```
+
+API: http://localhost:5268
+Frontend: http://localhost:4200
+
+The `docker-compose.yml` uses Postgres and the API is configured to run migrations on startup.
+
+## Continuous Integration
+
+A GitHub Actions workflow is included in `.github/workflows/ci.yml`. It builds the backend, applies EF migrations against a Postgres service, and builds the frontend. The workflow runs on pushes and pull requests to `main`.
+
 ### Frontend
 
 ```bash
@@ -126,6 +150,15 @@ npm run build
 - The books page is used as the landing page and start page.
 - The default development connection string uses SQL Server LocalDB.
 - Local testing uses `BookQuotes.Api/appsettings.Development.json`, while deployment should use production-safe settings in `BookQuotes.Api/appsettings.json` or environment variables.
+
+## Secrets & environment (best practices)
+
+- **Do not commit secrets.** Keep any secrets out of source control (JWT keys, production DB connection strings, certificates). Use environment variables or a secret store (Azure Key Vault, AWS Secrets Manager, HashiCorp Vault) in production.
+- **Local development:** copy `BookQuotes.Api/appsettings.Development.example.json` to `BookQuotes.Api/appsettings.Development.json` and keep secrets there only for local use. `appsettings.Development.json` is ignored by `.gitignore`.
+- **Use `.env.example`.** Add an `.env.example` showing required environment variables without values (see `BookQuotes.Api/.env.example`). Do not commit a populated `.env` file.
+- **DataProtection keys:** Persist ASP.NET Core DataProtection keys in production (file share, Redis, or Key Vault). For Docker Compose add a mounted volume for the key ring and configure `DataProtection` to use that folder.
+- **Windows vs cross-platform env vars:** On Windows use PowerShell to set env for a session: `setx ASPNETCORE_ENVIRONMENT Development` or `$env:ASPNETCORE_ENVIRONMENT = 'Development'`. Cross-platform examples are in the API README.
+- **Migrations:** Prefer running `dotnet ef database update --project BookQuotes.Api --startup-project BookQuotes.Api` so the correct startup configuration is used.
 
 ## Next Submission Steps
 

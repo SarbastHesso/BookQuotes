@@ -69,6 +69,20 @@ This is configured in `proxy.conf.json`.
 npm run build
 ```
 
+## Docker
+
+The repository includes a `Dockerfile` for the frontend and a `docker-compose.yml` to run the full stack (Postgres + API + frontend). To run the full stack:
+
+```bash
+docker compose up --build
+```
+
+The frontend will be served on `http://localhost:4200` when the compose stack is up.
+
+## Continuous Integration
+
+The project contains a GitHub Actions workflow at `.github/workflows/ci.yml` that builds the frontend and the API and runs EF migrations against a Postgres service. The workflow runs on pushes and pull requests to `main`.
+
 ## Test
 
 ```bash

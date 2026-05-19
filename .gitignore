@@ -17,8 +17,21 @@ bookquotes-ui/.angular/
 *.log
 .env
 .env.*
+bookquotes.db
+bookquotes.db-*
 
 # OS / editor files
 .DS_Store
 Thumbs.db
+
+# Editor/project files
+.vscode/
+.idea/
+
+# Secrets and certs
+secrets/
+*.pfx
+
+# ASP.NET DataProtection key rings (if stored locally)
+dataprotection-keys/
 

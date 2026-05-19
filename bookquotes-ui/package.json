@@ -6,7 +6,9 @@
     "start": "ng serve",
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
-    "test": "ng test"
+    "test": "ng test",
+    "cypress:open": "cypress open",
+    "cypress:run": "cypress run"
   },
   "private": true,
   "packageManager": "npm@11.6.0",
@@ -26,6 +28,8 @@
     "@angular/build": "^21.2.10",
     "@angular/cli": "^21.2.10",
     "@angular/compiler-cli": "^21.2.0",
+    "cypress": "^15.15.0",
+    "http-server": "^14.1.1",
     "jsdom": "^28.0.0",
     "prettier": "^3.8.1",
     "typescript": "~5.9.2",
