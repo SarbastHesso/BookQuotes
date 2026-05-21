@@ -151,29 +151,30 @@ namespace BookQuotes.Api
 
             var app = builder.Build();
 
-            // Apply any pending migrations on startup (useful for Docker/dev workflows)
-            try
+            // Apply any pending migrations on startup (useful for local development only)
+            if (app.Environment.IsDevelopment())
             {
-                using (var scope = app.Services.CreateScope())
+                try
                 {
-                    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-                    db.Database.Migrate();
+                    using (var scope = app.Services.CreateScope())
+                    {
+                        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+                        db.Database.Migrate();
+                    }
                 }
-            }
-            catch (Exception ex)
-            {
-                var logger = app.Services.GetRequiredService<ILogger<Program>>();
-                logger.LogError(ex, "An error occurred while migrating or initializing the database.");
+                catch (Exception ex)
+                {
+                    var logger = app.Services.GetRequiredService<ILogger<Program>>();
+                    logger.LogError(ex, "An error occurred while migrating or initializing the database.");
 
-                // If the exception is due to pending model changes, log a warning and continue
-                // so existing databases can be used without forcing an automatic migration.
-                if (ex is InvalidOperationException && ex.Message?.Contains("PendingModelChangesWarning") == true)
-                {
-                    logger.LogWarning("Pending EF Core model changes detected. Skipping automatic migration to avoid modifying the existing database.");
-                }
-                else
-                {
-                    throw;
+                    if (ex is InvalidOperationException && ex.Message?.Contains("PendingModelChangesWarning") == true)
+                    {
+                        logger.LogWarning("Pending EF Core model changes detected. Skipping automatic migration to avoid modifying the existing database.");
+                    }
+                    else
+                    {
+                        throw;
+                    }
                 }
             }
 
