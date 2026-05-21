@@ -9,8 +9,8 @@ COPY --from=deps /app/node_modules ./node_modules
 COPY bookquotes-ui/ .
 RUN npm run build -- --output-path=./dist --configuration=production
 
-# Serve with a lightweight static server
 FROM nginx:alpine
-COPY --from=build /app/dist/browser/ /usr/share/nginx/html
+COPY bookquotes-ui/nginx.conf /etc/nginx/conf.d/default.conf
+COPY --from=build /app/dist/browser/ /usr/share/nginx/html/
 EXPOSE 80
 CMD ["/bin/sh", "-c", "nginx -g 'daemon off;'"]

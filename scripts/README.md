@@ -5,6 +5,7 @@ Scripts:
 - `generate_jwt_key.sh` / `generate_jwt_key.ps1` — generate a 64-byte base64 symmetric key suitable for `Jwt:Key`.
 - `store_secrets_az.sh` — store secrets into Azure Key Vault using the `az` CLI.
 - `store_secrets_gh.sh` — store secrets into GitHub repository secrets using the `gh` CLI.
+- `store_staging_secrets_gh.sh` — store the staging deployment secrets and variables expected by `.github/workflows/deploy-staging.yml`.
 
 Usage examples:
 
@@ -29,6 +30,21 @@ az keyvault create -n my-bookquotes-kv -g myResourceGroup --location eastus
 
 ```bash
 ./scripts/store_secrets_gh.sh SarbastHesso/BookQuotes "$(cat jwt.key)" "Host=...;Database=bookquotes;Username=...;Password=..."
+```
+
+4. Store staging deployment secrets and variables in GitHub:
+
+```bash
+./scripts/store_staging_secrets_gh.sh \
+	SarbastHesso/BookQuotes \
+	staging.example.com \
+	deploy \
+	/opt/bookquotes \
+	staging.bookquotes.example \
+	"Host=...;Database=bookquotes;Username=...;Password=..." \
+	"$(cat jwt.key)" \
+	my-github-user \
+	"<ghcr-read-token>"
 ```
 
 Security notes:

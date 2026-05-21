@@ -19,6 +19,8 @@ bookquotes-ui/.angular/
 .env.*
 bookquotes.db
 bookquotes.db-*
+jwt.key
+build_output.txt
 
 # OS / editor files
 .DS_Store

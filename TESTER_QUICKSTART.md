@@ -29,7 +29,7 @@ cd BookQuotes
 
 ## 3 — Start the backend (API)
 
-Open a terminal in `BookQuotes.Api` and run the app. In Development the API will not apply automatic migrations.
+Open a terminal in `BookQuotes.Api` and run the app. In Development the API applies migrations on startup.
 
 Recommended flow (Windows):
 
@@ -37,7 +37,8 @@ Recommended flow (Windows):
 2. `dotnet build`
 3. `dotnet run`
 
-Verify health: open `http://localhost:5268/health` — expected: `{"status":"Healthy"}`
+Verify readiness: open `http://localhost:5268/health` — expected: HTTP `200 OK`
+Verify liveness: open `http://localhost:5268/health/live` — expected: HTTP `200 OK`
 
 ## 4 — Start the frontend (UI)
 
@@ -58,6 +59,7 @@ Open `http://localhost:4200`
 
 - Instead of sending a config file, the tester can set environment variables according to `BookQuotes.Api/.env.example`.
 - Or run the full stack with Docker: `docker compose up --build` (uses Postgres + API + frontend).
+- For hosted staging or production review, use the deployment notes in `README.md` and `DEPLOY_RUNBOOK.md`.
 
 ## Security note
 

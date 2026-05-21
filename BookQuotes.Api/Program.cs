@@ -2,13 +2,15 @@ using BookQuotes.Api.Data;
 using BookQuotes.Api.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.DataProtection;
+using Microsoft.AspNetCore.HttpOverrides;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using System.Text.Json;
-using Azure.Identity;
-using System;
+using System.IO;
+using System.Threading.RateLimiting;
 
 namespace BookQuotes.Api
 {
@@ -17,20 +19,6 @@ namespace BookQuotes.Api
         public static void Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
-
-            // If AZURE_KEY_VAULT_URI is set as an environment variable, load secrets from Key Vault
-            var keyVaultUri = Environment.GetEnvironmentVariable("AZURE_KEY_VAULT_URI");
-            if (!string.IsNullOrWhiteSpace(keyVaultUri))
-            {
-                try
-                {
-                    builder.Configuration.AddAzureKeyVault(new Uri(keyVaultUri), new DefaultAzureCredential());
-                }
-                catch (Exception)
-                {
-                    // Do not block startup if Key Vault is unavailable during local development.
-                }
-            }
 
             // Add services to the container.
 
@@ -47,6 +35,13 @@ namespace BookQuotes.Api
 
             // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
             builder.Services.AddOpenApi();
+
+            var dataProtectionKeyPath = builder.Configuration["DataProtection:KeyPath"];
+            var dataProtectionBuilder = builder.Services.AddDataProtection();
+            if (!string.IsNullOrWhiteSpace(dataProtectionKeyPath))
+            {
+                dataProtectionBuilder.PersistKeysToFileSystem(new DirectoryInfo(dataProtectionKeyPath));
+            }
 
             // Configure EF Core provider based on configuration (Default: SqlServer)
             var dbProvider = builder.Configuration["Database:Provider"] ?? "SqlServer";
@@ -68,78 +63,91 @@ namespace BookQuotes.Api
             }
 
             builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-            .AddJwtBearer(options =>
-            {
-                options.TokenValidationParameters = new TokenValidationParameters
+                .AddJwtBearer(options =>
                 {
-                    ValidateIssuer = true,
-                    ValidateAudience = true,
-                    ValidateLifetime = true,
-                    ValidateIssuerSigningKey = true,
-                    ValidIssuer = builder.Configuration["Jwt:Issuer"],
-                    ValidAudience = builder.Configuration["Jwt:Audience"],
-                    IssuerSigningKey = new SymmetricSecurityKey(
-                        Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]!)
-                    ),
-                    ClockSkew = TimeSpan.Zero
-                };
-
-                // Custom 401 message
-                options.Events = new JwtBearerEvents
-                {
-                    OnChallenge = context =>
+                    options.TokenValidationParameters = new TokenValidationParameters
                     {
-                        context.HandleResponse();
+                        ValidateIssuer = true,
+                        ValidateAudience = true,
+                        ValidateLifetime = true,
+                        ValidateIssuerSigningKey = true,
+                        ValidIssuer = builder.Configuration["Jwt:Issuer"],
+                        ValidAudience = builder.Configuration["Jwt:Audience"],
+                        IssuerSigningKey = new SymmetricSecurityKey(
+                            Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]!)
+                        ),
+                        ClockSkew = TimeSpan.Zero
+                    };
 
-                        context.Response.StatusCode = 401;
-                        context.Response.ContentType = "application/json";
-
-                        var result = JsonSerializer.Serialize(new
+                    // Custom 401 message
+                    options.Events = new JwtBearerEvents
+                    {
+                        OnChallenge = context =>
                         {
-                            error = "Authentication token is missing or invalid."
-                        });
+                            context.HandleResponse();
 
-                        return context.Response.WriteAsync(result);
-                    }
-                };
-            });
+                            context.Response.StatusCode = 401;
+                            context.Response.ContentType = "application/json";
 
+                            var result = JsonSerializer.Serialize(new
+                            {
+                                error = "Authentication token is missing or invalid."
+                            });
 
-            builder.Services.AddCors(options =>
+                            return context.Response.WriteAsync(result);
+                        }
+                    };
+                });
+
+            builder.Services.AddRateLimiter(options =>
             {
-                // Allow configuring allowed origins via configuration or env var `CORS_ALLOWED_ORIGINS` (comma-separated)
-                var origins = builder.Configuration["Cors:AllowedOrigins"] ?? Environment.GetEnvironmentVariable("CORS_ALLOWED_ORIGINS");
-                string[] allowed = new string[] { "http://localhost:4200" };
-                if (!string.IsNullOrWhiteSpace(origins))
+                options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+                options.AddFixedWindowLimiter("auth", limiterOptions =>
                 {
-                    allowed = origins.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
-                }
-
-                options.AddPolicy("AllowAngular", policy =>
-                {
-                    policy.WithOrigins(allowed)
-                          .AllowAnyHeader()
-                          .AllowAnyMethod();
+                    limiterOptions.PermitLimit = 10;
+                    limiterOptions.Window = TimeSpan.FromMinutes(1);
+                    limiterOptions.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
+                    limiterOptions.QueueLimit = 0;
                 });
             });
 
-            builder.Services.AddScoped<TokenService>();
+            var allowedOrigins = builder.Configuration["Cors:AllowedOrigins"]
+                ?.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+                ?? ["http://localhost:4200"];
 
-            // Configure DataProtection key persistence when DataProtection:KeyPath is provided.
-            var dataProtectionPath = builder.Configuration["DataProtection:KeyPath"];
-            if (!string.IsNullOrWhiteSpace(dataProtectionPath))
+            var allowedMethods = builder.Configuration["Cors:AllowedMethods"]
+                ?.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+                ?? ["GET", "POST", "PUT", "DELETE", "OPTIONS"];
+
+            var allowedHeaders = builder.Configuration["Cors:AllowedHeaders"]
+                ?.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+                ?? ["Authorization", "Content-Type"];
+
+            var allowCredentials = builder.Configuration.GetValue("Cors:AllowCredentials", true);
+
+            builder.Services.AddCors(options =>
             {
-                try
+                options.AddPolicy("AllowAngular", policy =>
                 {
-                    builder.Services.AddDataProtection()
-                        .PersistKeysToFileSystem(new System.IO.DirectoryInfo(dataProtectionPath));
-                }
-                catch (Exception ex)
-                {
-                    // If key path is invalid or not writable, continue but log the issue at runtime.
-                    // Runtime logger will surface this during startup.
-                }
-            }
+                    policy.WithOrigins(allowedOrigins)
+                          .WithHeaders(allowedHeaders)
+                          .WithMethods(allowedMethods);
+
+                    if (allowCredentials)
+                    {
+                        policy.AllowCredentials();
+                    }
+                });
+            });
+
+            builder.Services.Configure<ForwardedHeadersOptions>(options =>
+            {
+                options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+                options.KnownNetworks.Clear();
+                options.KnownProxies.Clear();
+            });
+
+            builder.Services.AddScoped<TokenService>();
 
             var app = builder.Build();
 
@@ -149,44 +157,22 @@ namespace BookQuotes.Api
                 using (var scope = app.Services.CreateScope())
                 {
                     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-                    var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
-
-                    if (db.Database.IsSqlite())
-                    {
-                        db.Database.EnsureCreated();
-                    }
-                    else
-                    {
-                        // Require explicit opt-in for applying migrations in non-development environments.
-                        // Set environment variable `AUTO_APPLY_MIGRATIONS=true` in CI/CD or host only when you want automatic migration.
-                        var autoApply = Environment.GetEnvironmentVariable("AUTO_APPLY_MIGRATIONS")?.ToLowerInvariant() == "true";
-                        if (!app.Environment.IsDevelopment() && autoApply)
-                        {
-                            db.Database.Migrate();
-                        }
-                        else if (!app.Environment.IsDevelopment())
-                        {
-                            logger.LogWarning("Automatic migrations are disabled in non-development environment. Set AUTO_APPLY_MIGRATIONS=true to enable.");
-                        }
-                        else
-                        {
-                            logger.LogInformation("Skipping automatic EF Core migrations in Development environment.");
-                        }
-                    }
+                    db.Database.Migrate();
                 }
             }
             catch (Exception ex)
             {
                 var logger = app.Services.GetRequiredService<ILogger<Program>>();
-                if (app.Environment.IsDevelopment())
+                logger.LogError(ex, "An error occurred while migrating or initializing the database.");
+
+                // If the exception is due to pending model changes, log a warning and continue
+                // so existing databases can be used without forcing an automatic migration.
+                if (ex is InvalidOperationException && ex.Message?.Contains("PendingModelChangesWarning") == true)
                 {
-                    // In development/docker workflows we log and continue so the app stays reachable for debugging.
-                    logger.LogError(ex, "An error occurred while migrating or initializing the database. Continuing without applying migrations (Development mode).");
+                    logger.LogWarning("Pending EF Core model changes detected. Skipping automatic migration to avoid modifying the existing database.");
                 }
                 else
                 {
-                    // In non-development environments (staging/production) fail fast so issues are visible.
-                    logger.LogError(ex, "An error occurred while migrating or initializing the database.");
                     throw;
                 }
             }
@@ -197,9 +183,13 @@ namespace BookQuotes.Api
                 app.MapOpenApi();
             }
 
+            app.UseForwardedHeaders();
+
             app.UseHttpsRedirection();
 
             app.UseCors("AllowAngular");
+
+            app.UseRateLimiter();
 
             app.UseAuthentication();
 
@@ -209,6 +199,7 @@ namespace BookQuotes.Api
 
             // Simple health endpoint for smoke checks
             app.MapGet("/health", () => Results.Ok(new { status = "Healthy" }));
+            app.MapGet("/health/live", () => Results.Ok(new { status = "Live" }));
 
 
             app.Run();

@@ -30,8 +30,7 @@ public class TokenService
             throw new Exception("JWT Issuer is missing in configuration.");
         if (string.IsNullOrWhiteSpace(audience))
             throw new Exception("JWT Audience is missing in configuration.");
-        if (string.IsNullOrWhiteSpace(expiresIn))
-            throw new Exception("JWT expiration time is missing in configuration.");
+        var expiresInMinutes = GetExpiryInMinutes();
 
         // 1. Claims
         var claims = new List<Claim>
@@ -53,7 +52,7 @@ public class TokenService
         var tokenDescriptor = new SecurityTokenDescriptor
         {
             Subject = new ClaimsIdentity(claims),
-            Expires = DateTime.UtcNow.AddMinutes(Convert.ToDouble(expiresIn)),
+            Expires = DateTime.UtcNow.AddMinutes(expiresInMinutes),
             Issuer = issuer,
             Audience = audience,
             SigningCredentials = creds
@@ -64,5 +63,15 @@ public class TokenService
         var token = tokenHandler.CreateToken(tokenDescriptor);
 
         return tokenHandler.WriteToken(token);
+    }
+
+    public double GetExpiryInMinutes()
+    {
+        var expiresIn = _config["Jwt:ExpiresInMinutes"];
+
+        if (string.IsNullOrWhiteSpace(expiresIn))
+            throw new Exception("JWT expiration time is missing in configuration.");
+
+        return Convert.ToDouble(expiresIn);
     }
 }

@@ -4,6 +4,7 @@ using BookQuotes.Api.Models;
 using BookQuotes.Api.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using System.Globalization;
 using System.Security.Cryptography;
@@ -15,6 +16,7 @@ namespace BookQuotes.Api.Controllers;
 [ApiController]
 public class AuthController : ControllerBase
 {
+    private const string AuthCookieName = "bookquotes_auth";
     private readonly AppDbContext _context;
     private readonly TokenService _tokenService;
 
@@ -26,6 +28,7 @@ public class AuthController : ControllerBase
 
     // POST: api/auth/register
     [AllowAnonymous]
+    [EnableRateLimiting("auth")]
     [HttpPost("register")]
     public async Task<IActionResult> Register(RegisterDto dto)
     {
@@ -55,6 +58,7 @@ public class AuthController : ControllerBase
 
     // POST: api/auth/login
     [AllowAnonymous]
+    [EnableRateLimiting("auth")]
     [HttpPost("login")]
     public async Task<IActionResult> Login(LoginDto dto)
     {
@@ -73,13 +77,41 @@ public class AuthController : ControllerBase
         // 3. Generate JWT token
         var token = _tokenService.CreateToken(user);
 
-        // 4. Return token to client
+        Response.Cookies.Append(AuthCookieName, token, BuildAuthCookieOptions());
+
+        // 4. Return user context without exposing the token to browser storage
         return Ok(new
         {
-            token,
             userId = user.Id,
             userName = user.UserName
         });
+    }
+
+    [Authorize]
+    [HttpGet("me")]
+    public IActionResult Me()
+    {
+        var userIdValue = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+        var userName = User.Identity?.Name;
+
+        if (!int.TryParse(userIdValue, out var userId) || string.IsNullOrWhiteSpace(userName))
+        {
+            return Unauthorized(new { message = "Authentication token is missing or invalid." });
+        }
+
+        return Ok(new
+        {
+            userId,
+            userName
+        });
+    }
+
+    [Authorize]
+    [HttpPost("logout")]
+    public IActionResult Logout()
+    {
+        Response.Cookies.Delete(AuthCookieName, BuildAuthCookieOptions());
+        return NoContent();
     }
 
     // ---------------------------------------------------------
@@ -110,5 +142,18 @@ public class AuthController : ControllerBase
     private static string NormalizeInput(string value)
     {
         return value.Trim();
+    }
+
+    private CookieOptions BuildAuthCookieOptions()
+    {
+        return new CookieOptions
+        {
+            HttpOnly = true,
+            Secure = Request.IsHttps,
+            SameSite = SameSiteMode.Strict,
+            Path = "/",
+            IsEssential = true,
+            Expires = DateTimeOffset.UtcNow.AddMinutes(_tokenService.GetExpiryInMinutes())
+        };
     }
 }

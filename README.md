@@ -1,12 +1,12 @@
 # BookQuotes
 
-BookQuotes is a responsive CRUD web application built with Angular 21 for the frontend and .NET 9 for the backend API. It lets users browse books and public quotes, register and log in with JWT authentication, manage books, and maintain a personal list of favorite quotes.
+BookQuotes is a responsive CRUD web application built with Angular 21 for the frontend and .NET 9 for the backend API. It lets users browse books and public quotes, register and log in with cookie-backed JWT authentication, manage books, and maintain a personal list of favorite quotes.
 
 ## Tech Stack
 
 - Frontend: Angular 21, Bootstrap 5, Font Awesome
 - Backend: ASP.NET Core 9 Web API, Entity Framework Core, SQL Server LocalDB
-- Authentication: JWT bearer tokens
+- Authentication: JWT bearer tokens issued by the API and stored in an HTTP-only auth cookie
 - Styling: Bootstrap with custom light/dark theme support
 
 ## Main Features
@@ -44,6 +44,7 @@ Before starting the app, create a local API development config:
 1. Copy `BookQuotes.Api/appsettings.Development.example.json` to `BookQuotes.Api/appsettings.Development.json`
 2. Keep the LocalDB connection string or replace it with your own local SQL Server connection string
 3. Replace `Jwt:Key` with a long random development-only secret
+4. Do not commit `BookQuotes.Api/appsettings.Development.json`
 
 Then prepare and run the project:
 
@@ -127,14 +128,7 @@ The `docker-compose.yml` uses Postgres and the API is configured to run migratio
 
 ## Continuous Integration
 
-A GitHub Actions workflow is included in `.github/workflows/ci.yml`. It builds the backend, applies EF migrations against a Postgres service, and builds the frontend. The workflow runs on pushes and pull requests to `main`.
-
-### Deployment and secrets
-
-- For production, do NOT store secrets in files. Use a secret store such as Azure Key Vault or GitHub Actions Secrets.
-- The API supports reading secrets from Azure Key Vault when the `AZURE_KEY_VAULT_URI` environment variable is set (it uses `DefaultAzureCredential`).
-- In GitHub Actions set `JWT_KEY` and `POSTGRES_CONNECTION` as repository secrets to inject them into the CI job (the CI workflow will add them to the environment when present).
-- Add `appsettings.Production.example.json` as a template and populate real values via Key Vault or environment variables in your deployment pipeline.
+A GitHub Actions workflow is included in `.github/workflows/ci.yml`. It builds the backend, applies EF migrations against a Postgres service, runs tests, builds the frontend, and on pushes to `main` publishes staging container images to GHCR for the deploy workflow.
 
 ### Frontend
 
@@ -156,23 +150,14 @@ npm run build
 - The app currently targets Angular 21 instead of Angular 20.
 - The books page is used as the landing page and start page.
 - The default development connection string uses SQL Server LocalDB.
-- Local testing uses `BookQuotes.Api/appsettings.Development.json`, while deployment should use production-safe settings in `BookQuotes.Api/appsettings.json` or environment variables.
-
-## Secrets & environment (best practices)
-
-- **Do not commit secrets.** Keep any secrets out of source control (JWT keys, production DB connection strings, certificates). Use environment variables or a secret store (Azure Key Vault, AWS Secrets Manager, HashiCorp Vault) in production.
-- **Local development:** copy `BookQuotes.Api/appsettings.Development.example.json` to `BookQuotes.Api/appsettings.Development.json` and keep secrets there only for local use. `appsettings.Development.json` is ignored by `.gitignore`.
-- **Use `.env.example`.** Add an `.env.example` showing required environment variables without values (see `BookQuotes.Api/.env.example`). Do not commit a populated `.env` file.
-- **DataProtection keys:** Persist ASP.NET Core DataProtection keys in production (file share, Redis, or Key Vault). For Docker Compose add a mounted volume for the key ring and configure `DataProtection` to use that folder.
-- **Windows vs cross-platform env vars:** On Windows use PowerShell to set env for a session: `setx ASPNETCORE_ENVIRONMENT Development` or `$env:ASPNETCORE_ENVIRONMENT = 'Development'`. Cross-platform examples are in the API README.
-- **Migrations:** Prefer running `dotnet ef database update --project BookQuotes.Api --startup-project BookQuotes.Api` so the correct startup configuration is used.
+- Local testing uses `BookQuotes.Api/appsettings.Development.json`, while deployment should use production-safe settings in `BookQuotes.Api/appsettings.json` examples plus environment variables or a secret store.
 
 ## Next Submission Steps
 
 - Finish a full end-to-end requirement test pass
-- Deploy the frontend to a free hosting service
-- Deploy the API to a free hosting service
-- Update production API URLs and CORS/proxy settings
+- Provision the staging host, domain, and secrets described in `DEPLOY_RUNBOOK.md`
+- Run the `CI` workflow on `main` and then trigger `Deploy Staging`
+- Validate `/health`, `/health/live`, login, CRUD, and logout on the deployed domain
 - Submit the live link and GitHub repository links
 
 ## More Documentation

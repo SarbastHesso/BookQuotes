@@ -1,23 +1,23 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { BehaviorSubject, Observable, tap } from 'rxjs';
+import { BehaviorSubject, Observable, catchError, finalize, map, of, shareReplay, tap } from 'rxjs';
 import { LoginDto, RegisterDto, AuthResponse } from '../models/auth.model';
 import { User } from '../models/user.model';
+import { environment } from '../../../environments/environment';
 
 @Injectable({
   providedIn: 'root',
 })
 export class AuthService {
-  private apiUrl = '/api/auth';
-  private storageKey = 'user';
-  private legacyTokenKey = 'token';
-  private legacyUserIdKey = 'userId';
-  private legacyUserNameKey = 'userName';
-
-  private currentUserSubject = new BehaviorSubject<User | null>(this.getUserFromStorage());
+  private apiUrl = `${environment.apiBaseUrl}/api/auth`;
+  private currentUserSubject = new BehaviorSubject<User | null>(null);
+  private sessionRestored = false;
+  private restoreSessionRequest$: Observable<User | null> | null = null;
   currentUser$ = this.currentUserSubject.asObservable();
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) {
+    this.restoreSession().subscribe();
+  }
 
   // ---------------------------------------------------------
   // LOGIN
@@ -28,10 +28,9 @@ export class AuthService {
         const user: User = {
           userId: response.userId,
           userName: response.userName,
-          token: response.token,
         };
 
-        this.saveUser(user);
+        this.sessionRestored = true;
         this.currentUserSubject.next(user);
       }),
     );
@@ -47,70 +46,45 @@ export class AuthService {
   // ---------------------------------------------------------
   // LOGOUT
   // ---------------------------------------------------------
-  logout(): void {
-    localStorage.removeItem(this.storageKey);
-    localStorage.removeItem(this.legacyTokenKey);
-    localStorage.removeItem(this.legacyUserIdKey);
-    localStorage.removeItem(this.legacyUserNameKey);
-    this.currentUserSubject.next(null);
-  }
-
-  // ---------------------------------------------------------
-  // TOKEN + USER HELPERS
-  // ---------------------------------------------------------
-  getToken(): string | null {
-    return this.currentUserSubject.value?.token ?? null;
+  logout(): Observable<void> {
+    return this.http.post<void>(`${this.apiUrl}/logout`, {}).pipe(
+      catchError(() => of(void 0)),
+      tap(() => {
+        this.sessionRestored = true;
+        this.currentUserSubject.next(null);
+      }),
+    );
   }
 
   isLoggedIn(): boolean {
-    return !!this.getToken();
+    return !!this.currentUserSubject.value;
   }
 
-  private saveUser(user: User): void {
-    localStorage.setItem(this.storageKey, JSON.stringify(user));
-    localStorage.removeItem(this.legacyTokenKey);
-    localStorage.removeItem(this.legacyUserIdKey);
-    localStorage.removeItem(this.legacyUserNameKey);
-  }
-
-  private getUserFromStorage(): User | null {
-    const data = localStorage.getItem(this.storageKey);
-
-    if (!data) {
-      return this.getLegacyUserFromStorage();
+  restoreSession(): Observable<User | null> {
+    if (this.sessionRestored) {
+      return of(this.currentUserSubject.value);
     }
 
-    try {
-      return JSON.parse(data) as User;
-    } catch {
-      localStorage.removeItem(this.storageKey);
-      return this.getLegacyUserFromStorage();
-    }
-  }
-
-  private getLegacyUserFromStorage(): User | null {
-    const token = localStorage.getItem(this.legacyTokenKey);
-    const userId = localStorage.getItem(this.legacyUserIdKey);
-    const userName = localStorage.getItem(this.legacyUserNameKey);
-
-    if (!token || !userId || !userName) {
-      return null;
+    if (this.restoreSessionRequest$) {
+      return this.restoreSessionRequest$;
     }
 
-    const parsedUserId = Number(userId);
-    if (Number.isNaN(parsedUserId)) {
-      localStorage.removeItem(this.legacyUserIdKey);
-      return null;
-    }
+    this.restoreSessionRequest$ = this.http.get<User>(`${this.apiUrl}/me`).pipe(
+      tap((user) => {
+        this.currentUserSubject.next(user);
+      }),
+      map((user) => user),
+      catchError(() => {
+        this.currentUserSubject.next(null);
+        return of(null);
+      }),
+      finalize(() => {
+        this.sessionRestored = true;
+        this.restoreSessionRequest$ = null;
+      }),
+      shareReplay(1),
+    );
 
-    const user: User = {
-      token,
-      userId: parsedUserId,
-      userName,
-    };
-
-    this.saveUser(user);
-
-    return user;
+    return this.restoreSessionRequest$;
   }
 }

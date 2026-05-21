@@ -15,7 +15,7 @@ This is the ASP.NET Core 9 Web API for the BookQuotes application.
 
 - ASP.NET Core 9 Web API
 - Entity Framework Core 9
-- SQL Server / LocalDB
+- SQL Server / LocalDB, SQLite, or PostgreSQL
 - JWT bearer authentication
 
 ## Local Run
@@ -45,10 +45,6 @@ ASPNETCORE_ENVIRONMENT=Development dotnet run
 ```
 
 The app will create `bookquotes.db` in the API folder when migrations run.
-
-Note: If you're using the SQLite provider for local development, prefer running the app with `dotnet run` (Development environment). `Program.cs` uses `EnsureCreated()` for SQLite which creates the database schema on first run. Running `dotnet ef database update` against an existing `bookquotes.db` that was created by a previous run may cause "table already exists" errors if migrations and the existing schema are out of sync.
-
-If you run into migration conflicts with SQLite, remove the local DB and re-create it using the helper scripts in `BookQuotes.Api/scripts/` (examples below).
 
 ### Docker (Postgres) dev
 
@@ -129,44 +125,19 @@ Replace these values with production-safe secrets before deployment.
 
 ## Development Notes
 
-- CORS currently allows `http://localhost:4200`
+- CORS is configuration-driven through `Cors:*` settings and falls back to `http://localhost:4200` in local development
 - OpenAPI is enabled in development
+- DataProtection keys can be persisted by setting `DataProtection:KeyPath`
+- The API trusts forwarded proxy headers for HTTPS-aware cookie behavior in reverse-proxy deployments
 - JSON responses use camelCase naming
 
 ## Deployment Notes
 
 Before deploying the API:
 
-- Move secrets out of `appsettings.json`
+- Never commit `appsettings.Development.json`; use the example file and local secrets only
+- Move production secrets out of `appsettings.json`
 - Replace the LocalDB connection string with a production database
 - Update CORS for the deployed frontend origin
-- Verify HTTPS-only JWT and API access
-
-## Secrets & environment (best practices)
-
-- **Environment variables:** Use environment variables for production secrets. For nested configuration use double-underscore naming (for example `ConnectionStrings__DefaultConnection`).
-- **Local development:** Keep local secrets in `appsettings.Development.json` only and do not commit it. Use `appsettings.Development.example.json` as the tracked example.
-- **.env.example:** A small `.env.example` is provided (`BookQuotes.Api/.env.example`) showing the common env keys for local cross-platform runs.
-- **DataProtection keys:** Persist DataProtection keys in production (use an external key store, Redis, or a mounted volume). Do not rely on ephemeral container storage for key rings.
-- **Certificates:** Keep certificates and `.pfx` files out of the repo; use secret stores or CI/CD protected variables to deploy them.
-
-### Quick cross-platform env examples
-
-Linux / macOS (bash):
-
-```bash
-export ASPNETCORE_ENVIRONMENT=Development
-export ConnectionStrings__DefaultConnection="Data Source=bookquotes.db"
-export Jwt__Key="ReplaceWithDevSecret"
-dotnet ef database update --project BookQuotes.Api --startup-project BookQuotes.Api
-dotnet run --project BookQuotes.Api
-```
-
-Windows PowerShell (session):
-
-```powershell
-$env:ASPNETCORE_ENVIRONMENT = 'Development'
-$env:ConnectionStrings__DefaultConnection = 'Server=(localdb)\\MSSQLLocalDB;Database=BookQuotesDb;Trusted_Connection=True;'
-dotnet ef database update --project BookQuotes.Api --startup-project BookQuotes.Api
-dotnet run --project BookQuotes.Api
-```
+- Verify `/health` and `/health/live`
+- Verify HTTPS-only cookie and proxy behavior
