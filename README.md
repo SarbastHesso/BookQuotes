@@ -179,3 +179,4 @@ npm run build
 
 - Frontend details: `bookquotes-ui/README.md`
 - API details: `BookQuotes.Api/README.md`
+ci: trigger build
