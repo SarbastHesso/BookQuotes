@@ -5,6 +5,7 @@ using BookQuotes.Api.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using System.Globalization;
 using System.Security.Cryptography;
@@ -16,7 +17,7 @@ namespace BookQuotes.Api.Controllers;
 [ApiController]
 public class AuthController : ControllerBase
 {
-    private const string AuthCookieName = "bookquotes_auth";
+    internal const string AuthCookieName = "bookquotes_auth";
     private readonly AppDbContext _context;
     private readonly TokenService _tokenService;
 
@@ -150,7 +151,7 @@ public class AuthController : ControllerBase
         {
             HttpOnly = true,
             Secure = Request.IsHttps,
-            SameSite = SameSiteMode.Strict,
+            SameSite = SameSiteMode.None,
             Path = "/",
             IsEssential = true,
             Expires = DateTimeOffset.UtcNow.AddMinutes(_tokenService.GetExpiryInMinutes())
