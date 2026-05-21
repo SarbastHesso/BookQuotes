@@ -68,7 +68,7 @@ jobs:
 
       - name: Run tests
         run: |
-          dotnet test tests/BookQuotes.Api.Tests/BookQuotes.Api.Tests.csproj -c Release --no-build
+          dotnet test tests/BookQuotes.Api.Tests/BookQuotes.Api.Tests.csproj -c Release
 
       - name: Build frontend
         working-directory: bookquotes-ui
