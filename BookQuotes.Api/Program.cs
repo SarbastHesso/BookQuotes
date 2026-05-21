@@ -1,4 +1,5 @@
 using BookQuotes.Api.Data;
+using BookQuotes.Api.Controllers;
 using BookQuotes.Api.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.DataProtection;
@@ -101,6 +102,17 @@ namespace BookQuotes.Api
                     // Custom 401 message
                     options.Events = new JwtBearerEvents
                     {
+                        OnMessageReceived = context =>
+                        {
+                            if (string.IsNullOrWhiteSpace(context.Token)
+                                && context.Request.Cookies.TryGetValue(AuthController.AuthCookieName, out var cookieToken)
+                                && !string.IsNullOrWhiteSpace(cookieToken))
+                            {
+                                context.Token = cookieToken;
+                            }
+
+                            return Task.CompletedTask;
+                        },
                         OnChallenge = context =>
                         {
                             context.HandleResponse();
