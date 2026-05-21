@@ -1,0 +1,65 @@
+name: Deploy Staging
+
+on:
+  workflow_dispatch:
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+permissions:
+  contents: read
+  packages: read
+
+jobs:
+  deploy-staging:
+    runs-on: ubuntu-latest
+    environment: staging
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Normalize image owner
+        run: echo "IMAGE_OWNER=${GITHUB_REPOSITORY_OWNER,,}" >> "$GITHUB_ENV"
+
+      - name: Load SSH key
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.STAGING_SSH_PRIVATE_KEY }}
+
+      - name: Add staging host to known_hosts
+        run: |
+          mkdir -p ~/.ssh
+          ssh-keyscan -p "${{ secrets.STAGING_SSH_PORT || 22 }}" -H "${{ secrets.STAGING_HOST }}" >> ~/.ssh/known_hosts
+
+      - name: Prepare staging directory
+        run: |
+          ssh -p "${{ secrets.STAGING_SSH_PORT || 22 }}" "${{ secrets.STAGING_USER }}@${{ secrets.STAGING_HOST }}" "mkdir -p '${{ secrets.STAGING_APP_PATH }}/deploy'"
+
+      - name: Upload deployment files
+        run: |
+          scp -P "${{ secrets.STAGING_SSH_PORT || 22 }}" docker-compose.production.yml "${{ secrets.STAGING_USER }}@${{ secrets.STAGING_HOST }}:${{ secrets.STAGING_APP_PATH }}/docker-compose.production.yml"
+          scp -P "${{ secrets.STAGING_SSH_PORT || 22 }}" deploy/Caddyfile "${{ secrets.STAGING_USER }}@${{ secrets.STAGING_HOST }}:${{ secrets.STAGING_APP_PATH }}/deploy/Caddyfile"
+
+      - name: Write staging environment file
+        run: |
+          ssh -p "${{ secrets.STAGING_SSH_PORT || 22 }}" "${{ secrets.STAGING_USER }}@${{ secrets.STAGING_HOST }}" <<EOF
+          cat > '${{ secrets.STAGING_APP_PATH }}/.env' <<ENVVARS
+          BOOKQUOTES_DOMAIN=${{ secrets.STAGING_DOMAIN }}
+          POSTGRES_CONNECTION=${{ secrets.STAGING_POSTGRES_CONNECTION }}
+          JWT_KEY=${{ secrets.STAGING_JWT_KEY }}
+          JWT_ISSUER=${{ vars.STAGING_JWT_ISSUER || 'BookQuotesApi' }}
+          JWT_AUDIENCE=${{ vars.STAGING_JWT_AUDIENCE || 'BookQuotesClient' }}
+          JWT_EXPIRES_IN_MINUTES=${{ vars.STAGING_JWT_EXPIRES_IN_MINUTES || '60' }}
+          API_IMAGE=ghcr.io/${{ env.IMAGE_OWNER }}/bookquotes-api:staging
+          FRONTEND_IMAGE=ghcr.io/${{ env.IMAGE_OWNER }}/bookquotes-frontend:staging
+          ENVVARS
+          EOF
+
+      - name: Deploy staging stack
+        run: |
+          ssh -p "${{ secrets.STAGING_SSH_PORT || 22 }}" "${{ secrets.STAGING_USER }}@${{ secrets.STAGING_HOST }}" <<EOF
+          echo '${{ secrets.GHCR_READ_TOKEN }}' | docker login ghcr.io -u '${{ secrets.GHCR_READ_USERNAME }}' --password-stdin
+          docker compose --env-file '${{ secrets.STAGING_APP_PATH }}/.env' -f '${{ secrets.STAGING_APP_PATH }}/docker-compose.production.yml' pull
+          docker compose --env-file '${{ secrets.STAGING_APP_PATH }}/.env' -f '${{ secrets.STAGING_APP_PATH }}/docker-compose.production.yml' up -d
+          EOF

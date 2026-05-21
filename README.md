@@ -1,12 +1,12 @@
 # BookQuotes
 
-BookQuotes is a responsive CRUD web application built with Angular 21 for the frontend and .NET 9 for the backend API. It lets users browse books and public quotes, register and log in with JWT authentication, manage books, and maintain a personal list of favorite quotes.
+BookQuotes is a responsive CRUD web application built with Angular 21 for the frontend and .NET 9 for the backend API. It lets users browse books and public quotes, register and log in with cookie-backed JWT authentication, manage books, and maintain a personal list of favorite quotes.
 
 ## Tech Stack
 
 - Frontend: Angular 21, Bootstrap 5, Font Awesome
 - Backend: ASP.NET Core 9 Web API, Entity Framework Core, SQL Server LocalDB
-- Authentication: JWT bearer tokens
+- Authentication: JWT bearer tokens issued by the API and stored in an HTTP-only auth cookie
 - Styling: Bootstrap with custom light/dark theme support
 
 ## Main Features
@@ -44,6 +44,7 @@ Before starting the app, create a local API development config:
 1. Copy `BookQuotes.Api/appsettings.Development.example.json` to `BookQuotes.Api/appsettings.Development.json`
 2. Keep the LocalDB connection string or replace it with your own local SQL Server connection string
 3. Replace `Jwt:Key` with a long random development-only secret
+4. Do not commit `BookQuotes.Api/appsettings.Development.json`
 
 Then prepare and run the project:
 
@@ -105,6 +106,30 @@ These are the main repo checks currently used:
 dotnet build BookQuotes.sln
 ```
 
+## Cross-platform development (SQLite) and Docker
+
+If you want a quick cross-platform local setup without installing SQL Server LocalDB, run the API using SQLite (already configured for Development):
+
+```bash
+ASPNETCORE_ENVIRONMENT=Development dotnet ef database update --project BookQuotes.Api --startup-project BookQuotes.Api
+ASPNETCORE_ENVIRONMENT=Development dotnet run --project BookQuotes.Api
+```
+
+For production-like parity and easy onboarding, you can use Docker Compose which brings up Postgres + API + frontend:
+
+```bash
+docker compose up --build
+```
+
+API: http://localhost:5268
+Frontend: http://localhost:4200
+
+The `docker-compose.yml` uses Postgres and the API is configured to run migrations on startup.
+
+## Continuous Integration
+
+A GitHub Actions workflow is included in `.github/workflows/ci.yml`. It builds the backend, applies EF migrations against a Postgres service, runs tests, builds the frontend, and on pushes to `main` publishes staging container images to GHCR for the deploy workflow.
+
 ### Frontend
 
 ```bash
@@ -125,17 +150,18 @@ npm run build
 - The app currently targets Angular 21 instead of Angular 20.
 - The books page is used as the landing page and start page.
 - The default development connection string uses SQL Server LocalDB.
-- Local testing uses `BookQuotes.Api/appsettings.Development.json`, while deployment should use production-safe settings in `BookQuotes.Api/appsettings.json` or environment variables.
+- Local testing uses `BookQuotes.Api/appsettings.Development.json`, while deployment should use production-safe settings in `BookQuotes.Api/appsettings.json` examples plus environment variables or a secret store.
 
 ## Next Submission Steps
 
 - Finish a full end-to-end requirement test pass
-- Deploy the frontend to a free hosting service
-- Deploy the API to a free hosting service
-- Update production API URLs and CORS/proxy settings
+- Provision the staging host, domain, and secrets described in `DEPLOY_RUNBOOK.md`
+- Run the `CI` workflow on `main` and then trigger `Deploy Staging`
+- Validate `/health`, `/health/live`, login, CRUD, and logout on the deployed domain
 - Submit the live link and GitHub repository links
 
 ## More Documentation
 
 - Frontend details: `bookquotes-ui/README.md`
 - API details: `BookQuotes.Api/README.md`
+ci: trigger build

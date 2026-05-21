@@ -1,0 +1,38 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:15
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: bookquotes
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+  api:
+    build:
+      context: .
+      dockerfile: BookQuotes.Api/Dockerfile
+    depends_on:
+      - db
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - Database__Provider=Postgres
+      - ConnectionStrings__PostgresConnection=Host=db;Database=bookquotes;Username=postgres;Password=postgres
+    ports:
+      - "5268:80"
+    restart: on-failure
+
+  frontend:
+    build:
+      context: .
+      dockerfile: bookquotes-ui/Dockerfile
+    ports:
+      - "4200:80"
+    restart: on-failure
+
+volumes:
+  db_data:

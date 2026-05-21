@@ -38,9 +38,12 @@ export class Navbar {
   }
 
   logout() {
-    this.authService.logout();
-    this.router.navigate(['/login']);
-    this.collapseMenu();
+    this.authService.logout().subscribe({
+      next: () => {
+        this.router.navigate(['/login']);
+        this.collapseMenu();
+      },
+    });
   }
 
   collapseMenu() {

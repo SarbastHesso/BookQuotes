@@ -15,7 +15,7 @@ This is the ASP.NET Core 9 Web API for the BookQuotes application.
 
 - ASP.NET Core 9 Web API
 - Entity Framework Core 9
-- SQL Server / LocalDB
+- SQL Server / LocalDB, SQLite, or PostgreSQL
 - JWT bearer authentication
 
 ## Local Run
@@ -34,6 +34,27 @@ dotnet build
 dotnet ef database update
 dotnet run
 ```
+
+### Cross-platform quick start (SQLite)
+
+The API supports SQLite for quick cross-platform development. To use SQLite locally (Development environment):
+
+```bash
+ASPNETCORE_ENVIRONMENT=Development dotnet ef database update --project BookQuotes.Api --startup-project BookQuotes.Api
+ASPNETCORE_ENVIRONMENT=Development dotnet run
+```
+
+The app will create `bookquotes.db` in the API folder when migrations run.
+
+### Docker (Postgres) dev
+
+You can run a development stack using Docker Compose (Postgres + API + frontend). From the repo root:
+
+```bash
+docker compose up --build
+```
+
+The API container applies EF migrations on startup and is configured to use Postgres in the compose file.
 
 Default development URLs:
 
@@ -104,15 +125,19 @@ Replace these values with production-safe secrets before deployment.
 
 ## Development Notes
 
-- CORS currently allows `http://localhost:4200`
+- CORS is configuration-driven through `Cors:*` settings and falls back to `http://localhost:4200` in local development
 - OpenAPI is enabled in development
+- DataProtection keys can be persisted by setting `DataProtection:KeyPath`
+- The API trusts forwarded proxy headers for HTTPS-aware cookie behavior in reverse-proxy deployments
 - JSON responses use camelCase naming
 
 ## Deployment Notes
 
 Before deploying the API:
 
-- Move secrets out of `appsettings.json`
+- Never commit `appsettings.Development.json`; use the example file and local secrets only
+- Move production secrets out of `appsettings.json`
 - Replace the LocalDB connection string with a production database
 - Update CORS for the deployed frontend origin
-- Verify HTTPS-only JWT and API access
+- Verify `/health` and `/health/live`
+- Verify HTTPS-only cookie and proxy behavior

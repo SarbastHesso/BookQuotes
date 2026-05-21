@@ -1,0 +1,113 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: bookquotes
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres" --health-interval 10s --health-timeout 5s --health-retries 5
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Normalize image owner
+        run: echo "IMAGE_OWNER=${GITHUB_REPOSITORY_OWNER,,}" >> "$GITHUB_ENV"
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: '9.0.x'
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Cache NuGet
+        uses: actions/cache@v4
+        with:
+          path: ~/.nuget/packages
+          key: nuget-${{ runner.os }}-${{ hashFiles('**/packages.lock.json') }}
+
+      - name: Cache node modules
+        uses: actions/cache@v4
+        with:
+          path: ~/.npm
+          key: node-modules-${{ hashFiles('**/package-lock.json') }}
+
+      - name: Restore .NET packages
+        run: dotnet restore BookQuotes.sln
+
+      - name: Build API
+        run: dotnet build BookQuotes.Api/BookQuotes.Api.csproj -c Release --no-restore
+
+      - name: Run EF migrations (Postgres)
+        env:
+          Database__Provider: Postgres
+          ConnectionStrings__PostgresConnection: Host=localhost;Database=bookquotes;Username=postgres;Password=postgres
+        run: |
+          dotnet tool install --global dotnet-ef --version 9.0.3 || true
+          export PATH="$HOME/.dotnet/tools:$PATH"
+          dotnet ef database update --project BookQuotes.Api --startup-project BookQuotes.Api
+
+      - name: Run tests
+        run: |
+          dotnet test tests/BookQuotes.Api.Tests/BookQuotes.Api.Tests.csproj -c Release
+
+      - name: Build frontend
+        working-directory: bookquotes-ui
+        run: |
+          npm ci --legacy-peer-deps
+          npm run build --if-present
+
+      - name: Login to GHCR
+        if: github.event_name == 'push'
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push API image
+        if: github.event_name == 'push'
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: BookQuotes.Api/Dockerfile
+          push: true
+          tags: |
+            ghcr.io/${{ env.IMAGE_OWNER }}/bookquotes-api:staging
+            ghcr.io/${{ env.IMAGE_OWNER }}/bookquotes-api:${{ github.sha }}
+
+      - name: Build and push frontend image
+        if: github.event_name == 'push'
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: bookquotes-ui/Dockerfile
+          push: true
+          tags: |
+            ghcr.io/${{ env.IMAGE_OWNER }}/bookquotes-frontend:staging
+            ghcr.io/${{ env.IMAGE_OWNER }}/bookquotes-frontend:${{ github.sha }}

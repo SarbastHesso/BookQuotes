@@ -1,0 +1,44 @@
+services:
+  proxy:
+    image: caddy:2.9-alpine
+    depends_on:
+      - api
+      - frontend
+    environment:
+      BOOKQUOTES_DOMAIN: ${BOOKQUOTES_DOMAIN}
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./deploy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    restart: unless-stopped
+
+  api:
+    image: ${API_IMAGE}
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      Database__Provider: Postgres
+      ConnectionStrings__PostgresConnection: ${POSTGRES_CONNECTION}
+      Jwt__Key: ${JWT_KEY}
+      Jwt__Issuer: ${JWT_ISSUER:-BookQuotesApi}
+      Jwt__Audience: ${JWT_AUDIENCE:-BookQuotesClient}
+      Jwt__ExpiresInMinutes: ${JWT_EXPIRES_IN_MINUTES:-60}
+      DataProtection__KeyPath: /keys
+      Cors__AllowedOrigins: https://${BOOKQUOTES_DOMAIN}
+      Cors__AllowedMethods: GET,POST,PUT,DELETE,OPTIONS
+      Cors__AllowedHeaders: Authorization,Content-Type
+      Cors__AllowCredentials: true
+    volumes:
+      - data_protection:/keys
+    restart: unless-stopped
+
+  frontend:
+    image: ${FRONTEND_IMAGE}
+    restart: unless-stopped
+
+volumes:
+  data_protection:
+  caddy_data:
+  caddy_config:
