@@ -29,6 +29,9 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Normalize image owner
+        run: echo "IMAGE_OWNER=${GITHUB_REPOSITORY_OWNER,,}" >> "$GITHUB_ENV"
+
       - name: Setup .NET
         uses: actions/setup-dotnet@v3
         with:
@@ -92,8 +95,8 @@ jobs:
           file: BookQuotes.Api/Dockerfile
           push: true
           tags: |
-            ghcr.io/${{ github.repository_owner }}/bookquotes-api:staging
-            ghcr.io/${{ github.repository_owner }}/bookquotes-api:${{ github.sha }}
+            ghcr.io/${{ env.IMAGE_OWNER }}/bookquotes-api:staging
+            ghcr.io/${{ env.IMAGE_OWNER }}/bookquotes-api:${{ github.sha }}
 
       - name: Build and push frontend image
         if: github.event_name == 'push'
@@ -103,5 +106,5 @@ jobs:
           file: bookquotes-ui/Dockerfile
           push: true
           tags: |
-            ghcr.io/${{ github.repository_owner }}/bookquotes-frontend:staging
-            ghcr.io/${{ github.repository_owner }}/bookquotes-frontend:${{ github.sha }}
+            ghcr.io/${{ env.IMAGE_OWNER }}/bookquotes-frontend:staging
+            ghcr.io/${{ env.IMAGE_OWNER }}/bookquotes-frontend:${{ github.sha }}
