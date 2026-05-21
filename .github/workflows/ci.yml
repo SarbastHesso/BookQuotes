@@ -27,7 +27,6 @@ jobs:
 
       # Optional: inject production secrets from GitHub Secrets into the job environment
       - name: Inject secrets from GitHub
-        if: ${{ secrets.JWT_KEY != '' && secrets.POSTGRES_CONNECTION != '' }}
         run: |
           echo "Jwt__Key=${{ secrets.JWT_KEY }}" >> $GITHUB_ENV
           echo "ConnectionStrings__PostgresConnection=${{ secrets.POSTGRES_CONNECTION }}" >> $GITHUB_ENV
