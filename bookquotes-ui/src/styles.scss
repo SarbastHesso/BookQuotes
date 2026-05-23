@@ -113,3 +113,15 @@ body {
 .muted-text {
 	color: var(--color-text-muted);
 }
+
+/* Auth helper links: theme-aware color and pointer cursor */
+.auth-helper-link {
+	color: var(--color-text);
+	cursor: pointer;
+	display: inline-block;
+}
+.auth-helper-link:focus,
+.auth-helper-link:hover {
+	text-decoration: underline;
+	text-underline-offset: 0.2rem;
+}
