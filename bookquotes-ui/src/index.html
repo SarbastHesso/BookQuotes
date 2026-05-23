@@ -7,6 +7,18 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="icon" type="image/svg+xml" href="favicon.svg">
   <link rel="alternate icon" href="favicon.ico">
+  <script>
+    // Force use of SVG favicon at runtime to override cached or default /favicon.ico
+    (function(){
+      try{
+        var existing = document.querySelector('link[rel~="icon"]');
+        if(existing){ existing.href = 'favicon.svg'; existing.type = 'image/svg+xml'; }
+        else{
+          var l = document.createElement('link'); l.rel = 'icon'; l.href = 'favicon.svg'; l.type = 'image/svg+xml'; document.head.appendChild(l);
+        }
+      }catch(e){}
+    })();
+  </script>
 </head>
 <body>
   <app-root></app-root>
