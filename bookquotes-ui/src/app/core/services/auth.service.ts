@@ -23,7 +23,7 @@ export class AuthService {
   // LOGIN
   // ---------------------------------------------------------
   login(dto: LoginDto): Observable<AuthResponse> {
-    return this.http.post<AuthResponse>(`${this.apiUrl}/login`, dto).pipe(
+    return this.http.post<AuthResponse>(`${this.apiUrl}/login`, dto, { withCredentials: true }).pipe(
       tap((response) => {
         const user: User = {
           userId: response.userId,
@@ -40,14 +40,14 @@ export class AuthService {
   // REGISTER
   // ---------------------------------------------------------
   register(dto: RegisterDto): Observable<any> {
-    return this.http.post(`${this.apiUrl}/register`, dto);
+    return this.http.post(`${this.apiUrl}/register`, dto, { withCredentials: true });
   }
 
   // ---------------------------------------------------------
   // LOGOUT
   // ---------------------------------------------------------
   logout(): Observable<void> {
-    return this.http.post<void>(`${this.apiUrl}/logout`, {}).pipe(
+    return this.http.post<void>(`${this.apiUrl}/logout`, {}, { withCredentials: true }).pipe(
       catchError(() => of(void 0)),
       tap(() => {
         this.sessionRestored = true;
@@ -69,7 +69,7 @@ export class AuthService {
       return this.restoreSessionRequest$;
     }
 
-    this.restoreSessionRequest$ = this.http.get<User>(`${this.apiUrl}/me`).pipe(
+    this.restoreSessionRequest$ = this.http.get<User>(`${this.apiUrl}/me`, { withCredentials: true }).pipe(
       tap((user) => {
         this.currentUserSubject.next(user);
       }),
