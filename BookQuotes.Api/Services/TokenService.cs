@@ -9,6 +9,7 @@ namespace BookQuotes.Api.Services;
 
 public class TokenService
 {
+    private const string DevelopmentFallbackJwtKey = "BookQuotes_Dev_Test_Key_ChangeMe";
     private readonly IConfiguration _config;
 
     public TokenService(IConfiguration config)
@@ -18,11 +19,9 @@ public class TokenService
 
     public string CreateToken(User user)
     {
-        // Validate config values
-        var keyString = _config["Jwt:Key"];
-        var issuer = _config["Jwt:Issuer"];
-        var audience = _config["Jwt:Audience"];
-        var expiresIn = _config["Jwt:ExpiresInMinutes"];
+        var keyString = ResolveJwtKey();
+        var issuer = _config["Jwt:Issuer"] ?? "BookQuotesApi";
+        var audience = _config["Jwt:Audience"] ?? "BookQuotesClient";
 
         if (string.IsNullOrWhiteSpace(keyString))
             throw new Exception("JWT Key is missing in configuration.");
@@ -70,8 +69,16 @@ public class TokenService
         var expiresIn = _config["Jwt:ExpiresInMinutes"];
 
         if (string.IsNullOrWhiteSpace(expiresIn))
-            throw new Exception("JWT expiration time is missing in configuration.");
+            return 60;
 
         return Convert.ToDouble(expiresIn);
+    }
+
+    private string ResolveJwtKey()
+    {
+        return _config["Jwt:Key"]
+            ?? _config["STAGING_JWT_KEY"]
+            ?? Environment.GetEnvironmentVariable("STAGING_JWT_KEY")
+            ?? DevelopmentFallbackJwtKey;
     }
 }
