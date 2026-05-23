@@ -69,7 +69,19 @@ export class Login {
           this.successMessage = 'Login successful! Redirecting...';
           this.cdr.detectChanges();
 
-          setTimeout(() => this.router.navigateByUrl(this.returnUrl), 1000);
+          setTimeout(() => {
+            // If an input is still focused (mobile keyboard), blur it so viewport can reset
+            try {
+              (document.activeElement as HTMLElement | null)?.blur();
+            } catch {}
+
+            // Navigate then ensure scroll is at the top (helps mobile browsers)
+            this.router.navigateByUrl(this.returnUrl).then(() => {
+              try {
+                window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
+              } catch {}
+            });
+          }, 1000);
         },
         error: (err) => {
           console.log('LOGIN ERROR:', err);

@@ -71,7 +71,17 @@ export class Register {
         next: () => {
           this.successMessage = 'Registration successful! Redirecting to login...';
           this.cdr.detectChanges();
-          setTimeout(() => this.router.navigate(['/login']), 1500);
+          setTimeout(() => {
+            try {
+              (document.activeElement as HTMLElement | null)?.blur();
+            } catch {}
+
+            this.router.navigate(['/login']).then(() => {
+              try {
+                window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
+              } catch {}
+            });
+          }, 1500);
         },
         error: (err) => {
           console.log('REGISTER ERROR:', err);
