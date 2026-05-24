@@ -53,6 +53,20 @@ Open a new terminal in `bookquotes-ui`:
 
 Open `http://localhost:4200`
 
+### Mobile testing (recommended)
+
+If you're testing from a mobile device on the same network, cookies with `SameSite=None` require HTTPS to be accepted by modern browsers. Use an HTTPS tunnel to expose your local API and frontend, for example with `ngrok`:
+
+```bash
+# Install ngrok and run an HTTPS tunnel to the API port (example: 7280)
+ngrok http 7280
+
+# Optionally run a tunnel for the frontend port 4200 as well
+ngrok http 4200
+```
+
+Update the frontend `apiBaseUrl` to use the ngrok host (the `https://...` URL) before testing on mobile so the auth cookie is set with `Secure` and `SameSite=None` and will persist across refreshes.
+
 ## 5 — Smoke tests for the tester
 
 - Load landing page (books list).

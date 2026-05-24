@@ -147,11 +147,14 @@ public class AuthController : ControllerBase
 
     private CookieOptions BuildAuthCookieOptions()
     {
+        // Browsers require `SameSite=None` cookies to also be `Secure`.
+        // For local (non-HTTPS) development fall back to `Lax` to avoid browsers rejecting the cookie.
+        var isHttps = Request.IsHttps;
         return new CookieOptions
         {
             HttpOnly = true,
-            Secure = Request.IsHttps,
-            SameSite = SameSiteMode.None,
+            Secure = isHttps,
+            SameSite = isHttps ? SameSiteMode.None : SameSiteMode.Lax,
             Path = "/",
             IsEssential = true,
             Expires = DateTimeOffset.UtcNow.AddMinutes(_tokenService.GetExpiryInMinutes())
