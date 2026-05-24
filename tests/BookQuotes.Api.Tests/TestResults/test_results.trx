@@ -1,0 +1,84 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TestRun id="2d19335c-119d-41b2-b39e-6bac915165f5" name="sarba@SARBAST 2026-05-24 16:03:47" runUser="SARBAST\sarba" xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
+  <Times creation="2026-05-24T16:03:47.4512344+02:00" queuing="2026-05-24T16:03:47.4512348+02:00" start="2026-05-24T16:03:45.0759689+02:00" finish="2026-05-24T16:03:47.4557227+02:00" />
+  <TestSettings name="default" id="0dffee23-81da-4d31-b113-b291eb71edc9">
+    <Deployment runDeploymentRoot="sarba_SARBAST_2026-05-24_16_03_47" />
+  </TestSettings>
+  <Results>
+    <UnitTestResult executionId="3aeb2195-841d-4112-8cd2-55cc9448ffe9" testId="532ba92f-a622-e188-e53d-8b0655102e0d" testName="BookQuotes.Api.Tests.BasicApiTests.Get_Books_ReturnsSuccess" computerName="SARBAST" duration="00:00:01.3991908" startTime="2026-05-24T16:03:47.0119187+02:00" endTime="2026-05-24T16:03:47.0119354+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="3aeb2195-841d-4112-8cd2-55cc9448ffe9" />
+    <UnitTestResult executionId="7a9dc5ef-9ac0-446b-b14f-9c89acc6d58f" testId="13f1815f-574e-3e96-5a45-47cff4ba8128" testName="BookQuotes.Api.Tests.BasicApiTests.TokenService_Uses_Staging_Jwt_Key_Fallback" computerName="SARBAST" duration="00:00:00.0011558" startTime="2026-05-24T16:03:47.3439732+02:00" endTime="2026-05-24T16:03:47.3439733+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="7a9dc5ef-9ac0-446b-b14f-9c89acc6d58f" />
+    <UnitTestResult executionId="377dcbd0-4614-4404-9057-98f6f4f1b4ca" testId="b6cf723e-d629-a0c4-edad-e417bc999816" testName="BookQuotes.Api.Tests.BasicApiTests.Register_Then_Login_Works_With_Staging_Jwt_Key_Fallback" computerName="SARBAST" duration="00:00:00.3298879" startTime="2026-05-24T16:03:47.3426252+02:00" endTime="2026-05-24T16:03:47.3426254+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="377dcbd0-4614-4404-9057-98f6f4f1b4ca" />
+  </Results>
+  <TestDefinitions>
+    <UnitTest name="BookQuotes.Api.Tests.BasicApiTests.Register_Then_Login_Works_With_Staging_Jwt_Key_Fallback" storage="c:\users\sarba\onedrive\desktop\bookquotes\tests\bookquotes.api.tests\bin\debug\net9.0\bookquotes.api.tests.dll" id="b6cf723e-d629-a0c4-edad-e417bc999816">
+      <Execution id="377dcbd0-4614-4404-9057-98f6f4f1b4ca" />
+      <TestMethod codeBase="C:\Users\sarba\OneDrive\Desktop\BookQuotes\tests\BookQuotes.Api.Tests\bin\Debug\net9.0\BookQuotes.Api.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="BookQuotes.Api.Tests.BasicApiTests" name="Register_Then_Login_Works_With_Staging_Jwt_Key_Fallback" />
+    </UnitTest>
+    <UnitTest name="BookQuotes.Api.Tests.BasicApiTests.TokenService_Uses_Staging_Jwt_Key_Fallback" storage="c:\users\sarba\onedrive\desktop\bookquotes\tests\bookquotes.api.tests\bin\debug\net9.0\bookquotes.api.tests.dll" id="13f1815f-574e-3e96-5a45-47cff4ba8128">
+      <Execution id="7a9dc5ef-9ac0-446b-b14f-9c89acc6d58f" />
+      <TestMethod codeBase="C:\Users\sarba\OneDrive\Desktop\BookQuotes\tests\BookQuotes.Api.Tests\bin\Debug\net9.0\BookQuotes.Api.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="BookQuotes.Api.Tests.BasicApiTests" name="TokenService_Uses_Staging_Jwt_Key_Fallback" />
+    </UnitTest>
+    <UnitTest name="BookQuotes.Api.Tests.BasicApiTests.Get_Books_ReturnsSuccess" storage="c:\users\sarba\onedrive\desktop\bookquotes\tests\bookquotes.api.tests\bin\debug\net9.0\bookquotes.api.tests.dll" id="532ba92f-a622-e188-e53d-8b0655102e0d">
+      <Execution id="3aeb2195-841d-4112-8cd2-55cc9448ffe9" />
+      <TestMethod codeBase="C:\Users\sarba\OneDrive\Desktop\BookQuotes\tests\BookQuotes.Api.Tests\bin\Debug\net9.0\BookQuotes.Api.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="BookQuotes.Api.Tests.BasicApiTests" name="Get_Books_ReturnsSuccess" />
+    </UnitTest>
+  </TestDefinitions>
+  <TestEntries>
+    <TestEntry testId="532ba92f-a622-e188-e53d-8b0655102e0d" executionId="3aeb2195-841d-4112-8cd2-55cc9448ffe9" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="13f1815f-574e-3e96-5a45-47cff4ba8128" executionId="7a9dc5ef-9ac0-446b-b14f-9c89acc6d58f" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="b6cf723e-d629-a0c4-edad-e417bc999816" executionId="377dcbd0-4614-4404-9057-98f6f4f1b4ca" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+  </TestEntries>
+  <TestLists>
+    <TestList name="Results Not in a List" id="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestList name="All Loaded Results" id="19431567-8539-422a-85d7-44ee4e166bda" />
+  </TestLists>
+  <ResultSummary outcome="Completed">
+    <Counters total="3" executed="3" passed="3" failed="0" error="0" timeout="0" aborted="0" inconclusive="0" passedButRunAborted="0" notRunnable="0" notExecuted="0" disconnected="0" warning="0" completed="0" inProgress="0" pending="0" />
+    <Output>
+      <StdOut>[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v2.5.3.1+6b60a9e56a (64-bit .NET 9.0.9)&#xD;
+[xUnit.net 00:00:00.08]   Discovering: BookQuotes.Api.Tests&#xD;
+[xUnit.net 00:00:00.11]   Discovered:  BookQuotes.Api.Tests&#xD;
+[xUnit.net 00:00:00.11]   Starting:    BookQuotes.Api.Tests&#xD;
+fail: BookQuotes.Api.Program[0]&#xD;
+      An error occurred while migrating or initializing the database.&#xD;
+      System.InvalidOperationException: An error was generated for warning 'Microsoft.EntityFrameworkCore.Migrations.PendingModelChangesWarning': The model for context 'AppDbContext' has pending changes. Add a new migration before updating the database. See https://aka.ms/efcore-docs-pending-changes. This exception can be suppressed or logged by passing event ID 'RelationalEventId.PendingModelChangesWarning' to the 'ConfigureWarnings' method in 'DbContext.OnConfiguring' or 'AddDbContext'.&#xD;
+         at Microsoft.EntityFrameworkCore.Diagnostics.EventDefinition`1.Log[TLoggerCategory](IDiagnosticsLogger`1 logger, TParam arg)&#xD;
+         at Microsoft.EntityFrameworkCore.Diagnostics.RelationalLoggerExtensions.PendingModelChangesWarning(IDiagnosticsLogger`1 diagnostics, Type contextType)&#xD;
+         at Microsoft.EntityFrameworkCore.Migrations.Internal.Migrator.ValidateMigrations(Boolean useTransaction, String targetMigration)&#xD;
+         at Microsoft.EntityFrameworkCore.Migrations.Internal.Migrator.Migrate(String targetMigration)&#xD;
+         at Microsoft.EntityFrameworkCore.RelationalDatabaseFacadeExtensions.Migrate(DatabaseFacade databaseFacade)&#xD;
+         at BookQuotes.Api.Program.Main(String[] args) in C:\Users\sarba\OneDrive\Desktop\BookQuotes\BookQuotes.Api\Program.cs:line 215&#xD;
+warn: BookQuotes.Api.Program[0]&#xD;
+      Pending EF Core model changes detected. Skipping automatic migration to avoid modifying the existing database.&#xD;
+warn: Microsoft.AspNetCore.HttpsPolicy.HttpsRedirectionMiddleware[3]&#xD;
+      Failed to determine the https port for redirect.&#xD;
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]&#xD;
+      Executed DbCommand (21ms) [Parameters=[], CommandType='Text', CommandTimeout='30']&#xD;
+      SELECT [b].[Id], [b].[Author], [b].[PublishedYear], [b].[Title]&#xD;
+      FROM [Books] AS [b]&#xD;
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]&#xD;
+      Executed DbCommand (9ms) [Parameters=[@__ToLower_0='?' (Size = 50)], CommandType='Text', CommandTimeout='30']&#xD;
+      SELECT CASE&#xD;
+          WHEN EXISTS (&#xD;
+              SELECT 1&#xD;
+              FROM [Users] AS [u]&#xD;
+              WHERE LOWER([u].[UserName]) = @__ToLower_0) THEN CAST(1 AS bit)&#xD;
+          ELSE CAST(0 AS bit)&#xD;
+      END&#xD;
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]&#xD;
+      Executed DbCommand (6ms) [Parameters=[@p0='?' (Size = 8000) (DbType = Binary), @p1='?' (Size = 8000) (DbType = Binary), @p2='?' (Size = 50)], CommandType='Text', CommandTimeout='30']&#xD;
+      SET IMPLICIT_TRANSACTIONS OFF;&#xD;
+      SET NOCOUNT ON;&#xD;
+      INSERT INTO [Users] ([PasswordHash], [PasswordSalt], [UserName])&#xD;
+      OUTPUT INSERTED.[Id]&#xD;
+      VALUES (@p0, @p1, @p2);&#xD;
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]&#xD;
+      Executed DbCommand (0ms) [Parameters=[@__ToLower_0='?' (Size = 50)], CommandType='Text', CommandTimeout='30']&#xD;
+      SELECT TOP(1) [u].[Id], [u].[PasswordHash], [u].[PasswordSalt], [u].[UserName]&#xD;
+      FROM [Users] AS [u]&#xD;
+      WHERE LOWER([u].[UserName]) = @__ToLower_0&#xD;
+[xUnit.net 00:00:01.89]   Finished:    BookQuotes.Api.Tests&#xD;
+</StdOut>
+    </Output>
+  </ResultSummary>
+</TestRun>
