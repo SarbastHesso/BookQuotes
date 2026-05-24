@@ -160,9 +160,23 @@ namespace BookQuotes.Api
             {
                 options.AddPolicy("AllowAngular", policy =>
                 {
-                    policy.WithOrigins(allowedOrigins)
-                          .WithHeaders(allowedHeaders)
-                          .WithMethods(allowedMethods);
+                    // If AllowedOrigins contains a single '*' entry, allow any origin
+                    // by reflecting the request origin. This is safe for local/dev only
+                    // when combined with proper secret handling. For production, set
+                    // explicit origins in configuration.
+                    var originsList = allowedOrigins ?? Array.Empty<string>();
+                    if (originsList.Length == 1 && originsList[0].Trim() == "*")
+                    {
+                        policy.SetIsOriginAllowed(_ => true)
+                              .WithHeaders(allowedHeaders)
+                              .WithMethods(allowedMethods);
+                    }
+                    else
+                    {
+                        policy.WithOrigins(originsList)
+                              .WithHeaders(allowedHeaders)
+                              .WithMethods(allowedMethods);
+                    }
 
                     if (allowCredentials)
                     {

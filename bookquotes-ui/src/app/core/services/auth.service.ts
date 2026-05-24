@@ -9,6 +9,7 @@ import { environment } from '../../../environments/environment';
   providedIn: 'root',
 })
 export class AuthService {
+  private readonly tokenStorageKey = 'bookquotes_auth_token';
   private apiUrl = `${environment.apiBaseUrl}/api/auth`;
   private currentUserSubject = new BehaviorSubject<User | null>(null);
   private sessionRestored = false;
@@ -25,6 +26,8 @@ export class AuthService {
   login(dto: LoginDto): Observable<AuthResponse> {
     return this.http.post<AuthResponse>(`${this.apiUrl}/login`, dto, { withCredentials: true }).pipe(
       tap((response) => {
+        this.setStoredToken(response.token);
+
         const user: User = {
           userId: response.userId,
           userName: response.userName,
@@ -50,6 +53,7 @@ export class AuthService {
     return this.http.post<void>(`${this.apiUrl}/logout`, {}, { withCredentials: true }).pipe(
       catchError(() => of(void 0)),
       tap(() => {
+        this.clearStoredToken();
         this.sessionRestored = true;
         this.currentUserSubject.next(null);
       }),
@@ -75,6 +79,7 @@ export class AuthService {
       }),
       map((user) => user),
       catchError(() => {
+        this.clearStoredToken();
         this.currentUserSubject.next(null);
         return of(null);
       }),
@@ -86,5 +91,13 @@ export class AuthService {
     );
 
     return this.restoreSessionRequest$;
+  }
+
+  private setStoredToken(token: string): void {
+    localStorage.setItem(this.tokenStorageKey, token);
+  }
+
+  private clearStoredToken(): void {
+    localStorage.removeItem(this.tokenStorageKey);
   }
 }

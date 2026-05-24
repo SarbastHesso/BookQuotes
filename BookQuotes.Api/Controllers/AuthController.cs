@@ -83,6 +83,7 @@ public class AuthController : ControllerBase
         // 4. Return user context without exposing the token to browser storage
         return Ok(new
         {
+            token,
             userId = user.Id,
             userName = user.UserName
         });
