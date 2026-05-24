@@ -196,8 +196,9 @@ namespace BookQuotes.Api
 
             var app = builder.Build();
 
-            // Apply any pending migrations on startup (useful for local development only)
-            if (app.Environment.IsDevelopment() || usingSqliteFallback)
+            // Apply any pending migrations on startup
+            var isPostgres = dbProvider?.ToLowerInvariant() is "postgres" or "postgresql";
+            if (app.Environment.IsDevelopment() || usingSqliteFallback || isPostgres)
             {
                 try
                 {
@@ -241,6 +242,16 @@ namespace BookQuotes.Api
             app.UseForwardedHeaders();
 
             app.UseHttpsRedirection();
+
+            app.UseExceptionHandler(errorApp =>
+            {
+                errorApp.Run(async context =>
+                {
+                    context.Response.StatusCode = 500;
+                    context.Response.ContentType = "application/json";
+                    await context.Response.WriteAsync("{\"error\":\"An unexpected error occurred.\"}");
+                });
+            });
 
             app.UseCors("AllowAngular");
 
