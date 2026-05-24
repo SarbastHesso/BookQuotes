@@ -57,6 +57,12 @@ dotnet ef database update
 dotnet run
 ```
 
+Cleanup: A helper script is available to remove local build artifacts and developer files before committing. Run from the repo root (PowerShell):
+
+```powershell
+pwsh -NoProfile -NonInteractive -ExecutionPolicy Bypass -File ./scripts/cleanup_repo.ps1
+```
+
 2. From `bookquotes-ui/`, run:
 
 ```bash

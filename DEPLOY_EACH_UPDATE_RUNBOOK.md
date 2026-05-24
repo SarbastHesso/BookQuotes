@@ -4,12 +4,11 @@ This file describes the exact steps to follow each time you change code and want
 
 Important:
 
-- This file is for the current live setup:
-  - Backend: Azure App Service using `ghcr.io/sarbasthesso/bookquotes-api:staging`
-  - Frontend: Azure Static Web Apps deployed from `main`
-  - Backend image build/push: GitHub Actions `CI` on `main`
-- This file is intended to stay local for your own use.
-- Do not commit or push this file unless you explicitly decide to later.
+- This file documents the current deployment paths and operational steps. It may contain host-specific notes and examples; it MUST NOT contain plaintext secrets (database passwords, private keys, tokens).
+
+- The examples include guidance to set secrets with `gh` and `az`. Prefer storing secrets in a secure store (GitHub repository secrets, GitHub environment secrets, or Azure Key Vault) rather than embedding them in files checked into source control.
+
+- The runbook can be committed to the repository for convenience, but any environment-specific secret values should be omitted or redacted.
 
 ## Current deployment model
 
