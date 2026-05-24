@@ -154,8 +154,8 @@ public class AuthController : ControllerBase
         return new CookieOptions
         {
             HttpOnly = true,
-            Secure = isHttps,
-            SameSite = isHttps ? SameSiteMode.None : SameSiteMode.Lax,
+            Secure = Request.IsHttps,
+            SameSite = SameSiteMode.None,
             Path = "/",
             IsEssential = true,
             Expires = DateTimeOffset.UtcNow.AddMinutes(_tokenService.GetExpiryInMinutes())
