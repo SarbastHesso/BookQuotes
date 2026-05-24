@@ -17,11 +17,15 @@ cd BookQuotes
 
 ## 2 — Configuration (required)
 
-- You will receive a separate file named `appsettings.Development.json` from the project owner. Save that file into the API folder:
+ - Create a local development config by copying the example and filling values, or request a sanitized config from the project owner via a secure channel.
 
-  - `BookQuotes.Api/appsettings.Development.json`
+  - Copy the example:
 
-- Important: do NOT commit this file. It contains development secrets.
+    - `cp BookQuotes.Api/appsettings.Development.example.json BookQuotes.Api/appsettings.Development.json`
+
+  - Edit `BookQuotes.Api/appsettings.Development.json` and set the database provider, connection string, and `Jwt:Key` as needed.
+
+  - Important: do NOT commit `BookQuotes.Api/appsettings.Development.json`. It may contain development secrets.
 
 - Confirm the DB provider in the file:
   - On Windows: `"Database": { "Provider": "SqlServer" }`
@@ -48,6 +52,20 @@ Open a new terminal in `bookquotes-ui`:
 2. `npm start`
 
 Open `http://localhost:4200`
+
+### Mobile testing (recommended)
+
+If you're testing from a mobile device on the same network, cookies with `SameSite=None` require HTTPS to be accepted by modern browsers. Use an HTTPS tunnel to expose your local API and frontend, for example with `ngrok`:
+
+```bash
+# Install ngrok and run an HTTPS tunnel to the API port (example: 7280)
+ngrok http 7280
+
+# Optionally run a tunnel for the frontend port 4200 as well
+ngrok http 4200
+```
+
+Update the frontend `apiBaseUrl` to use the ngrok host (the `https://...` URL) before testing on mobile so the auth cookie is set with `Secure` and `SameSite=None` and will persist across refreshes.
 
 ## 5 — Smoke tests for the tester
 

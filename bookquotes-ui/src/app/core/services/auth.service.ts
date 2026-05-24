@@ -9,6 +9,7 @@ import { environment } from '../../../environments/environment';
   providedIn: 'root',
 })
 export class AuthService {
+  private readonly tokenStorageKey = 'bookquotes_auth_token';
   private apiUrl = `${environment.apiBaseUrl}/api/auth`;
   private currentUserSubject = new BehaviorSubject<User | null>(null);
   private sessionRestored = false;
@@ -23,8 +24,10 @@ export class AuthService {
   // LOGIN
   // ---------------------------------------------------------
   login(dto: LoginDto): Observable<AuthResponse> {
-    return this.http.post<AuthResponse>(`${this.apiUrl}/login`, dto).pipe(
+    return this.http.post<AuthResponse>(`${this.apiUrl}/login`, dto, { withCredentials: true }).pipe(
       tap((response) => {
+        this.setStoredToken(response.token);
+
         const user: User = {
           userId: response.userId,
           userName: response.userName,
@@ -40,16 +43,17 @@ export class AuthService {
   // REGISTER
   // ---------------------------------------------------------
   register(dto: RegisterDto): Observable<any> {
-    return this.http.post(`${this.apiUrl}/register`, dto);
+    return this.http.post(`${this.apiUrl}/register`, dto, { withCredentials: true });
   }
 
   // ---------------------------------------------------------
   // LOGOUT
   // ---------------------------------------------------------
   logout(): Observable<void> {
-    return this.http.post<void>(`${this.apiUrl}/logout`, {}).pipe(
+    return this.http.post<void>(`${this.apiUrl}/logout`, {}, { withCredentials: true }).pipe(
       catchError(() => of(void 0)),
       tap(() => {
+        this.clearStoredToken();
         this.sessionRestored = true;
         this.currentUserSubject.next(null);
       }),
@@ -69,12 +73,13 @@ export class AuthService {
       return this.restoreSessionRequest$;
     }
 
-    this.restoreSessionRequest$ = this.http.get<User>(`${this.apiUrl}/me`).pipe(
+    this.restoreSessionRequest$ = this.http.get<User>(`${this.apiUrl}/me`, { withCredentials: true }).pipe(
       tap((user) => {
         this.currentUserSubject.next(user);
       }),
       map((user) => user),
       catchError(() => {
+        this.clearStoredToken();
         this.currentUserSubject.next(null);
         return of(null);
       }),
@@ -86,5 +91,13 @@ export class AuthService {
     );
 
     return this.restoreSessionRequest$;
+  }
+
+  private setStoredToken(token: string): void {
+    localStorage.setItem(this.tokenStorageKey, token);
+  }
+
+  private clearStoredToken(): void {
+    localStorage.removeItem(this.tokenStorageKey);
   }
 }

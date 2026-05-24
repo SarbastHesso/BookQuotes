@@ -7,6 +7,7 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
   if (isApiRequest) {
     req = req.clone({
       withCredentials: true,
+      setHeaders: token ? { Authorization: `Bearer ${token}` } : undefined,
     });
   }
 

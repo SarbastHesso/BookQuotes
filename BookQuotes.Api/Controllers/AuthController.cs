@@ -83,6 +83,7 @@ public class AuthController : ControllerBase
         // 4. Return user context without exposing the token to browser storage
         return Ok(new
         {
+            token,
             userId = user.Id,
             userName = user.UserName
         });
@@ -147,6 +148,9 @@ public class AuthController : ControllerBase
 
     private CookieOptions BuildAuthCookieOptions()
     {
+        // Browsers require `SameSite=None` cookies to also be `Secure`.
+        // For local (non-HTTPS) development fall back to `Lax` to avoid browsers rejecting the cookie.
+        var isHttps = Request.IsHttps;
         return new CookieOptions
         {
             HttpOnly = true,
