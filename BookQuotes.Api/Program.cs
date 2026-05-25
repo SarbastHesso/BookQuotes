@@ -220,16 +220,9 @@ namespace BookQuotes.Api
                 catch (Exception ex)
                 {
                     var logger = app.Services.GetRequiredService<ILogger<Program>>();
-                    logger.LogError(ex, "An error occurred while migrating or initializing the database.");
-
-                    if (ex is InvalidOperationException && ex.Message?.Contains("PendingModelChangesWarning") == true)
-                    {
-                        logger.LogWarning("Pending EF Core model changes detected. Skipping automatic migration to avoid modifying the existing database.");
-                    }
-                    else
-                    {
-                        throw;
-                    }
+                    logger.LogError(ex, "An error occurred while migrating or initializing the database. App will continue starting up.");
+                    // Do not crash the app on migration failure — let it start so the
+                    // health endpoint stays reachable and logs are visible.
                 }
             }
 
@@ -247,6 +240,14 @@ namespace BookQuotes.Api
             {
                 errorApp.Run(async context =>
                 {
+                    // Manually apply CORS headers — the CORS middleware branch is bypassed
+                    // by the exception handler pipeline, so headers must be set explicitly.
+                    var origin = context.Request.Headers["Origin"].ToString();
+                    if (!string.IsNullOrEmpty(origin))
+                    {
+                        context.Response.Headers["Access-Control-Allow-Origin"] = origin;
+                        context.Response.Headers["Access-Control-Allow-Credentials"] = "true";
+                    }
                     context.Response.StatusCode = 500;
                     context.Response.ContentType = "application/json";
                     await context.Response.WriteAsync("{\"error\":\"An unexpected error occurred.\"}");
